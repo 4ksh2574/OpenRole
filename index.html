@@ -691,6 +691,21 @@
                             ${res.package}
                         </div>
                     </div>
+
+                    <!-- CHAIN FORWARD WATERMARK & NOTICE -->
+                    <div class="mt-4 bg-gradient-to-r from-amber-50 via-rose-50 to-orange-50 p-3.5 rounded-2xl border border-amber-200/90 text-center space-y-1 shadow-2xs">
+                        <div class="flex items-center justify-center gap-1.5 text-amber-800 font-extrabold text-[11px]">
+                            <span>✨</span>
+                            <span>JAI HO CHAIN REACTION</span>
+                            <span>✨</span>
+                        </div>
+                        <p class="text-[11px] text-slate-700 font-medium leading-tight">
+                            "Please 'Thank You' mat bolo... Iski jagah yeh OpenRole link apni 3 saheliyon ko forward kar do, aur unse kehna ki woh aage 3 ko karein! 🚀"
+                        </p>
+                        <p class="text-[10px] font-black text-rose-600 tracking-wide uppercase pt-0.5">
+                            ⚠️ Warning: Mata Rani ka paap lagega agar aage 3 ko forward nahi kiya to! 🙏
+                        </p>
+                    </div>
                 </div>
 
                 <!-- BOTTOM CONTROLS -->
@@ -866,7 +881,7 @@
             if (navigator.share) {
                 navigator.share({
                     title: 'OpenRole - Personal Vacancy',
-                    text: 'Check out this Open Role personal vacancy!',
+                    text: 'Please "Thank You" mat bolo... Iski jagah yeh OpenRole link apni 3 saheliyon ko forward kar do! 🚀',
                     url: shareableURL
                 }).catch(() => {
                     openShareModalWithURL(shareableURL);
