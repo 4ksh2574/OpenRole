@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenRole - Personal Vacancy & Micro-Resume</title>
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="OpenRole - Personal Vacancy & Micro-Resume" />
+    <meta property="og:description" content="Post a vacancy for your life: dating, side-projects, co-op gaming, or gym accountability!" />
+    <meta property="og:type" content="website" />
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #ccfbf1 0%, #f0fdf4 35%, #e0f2fe 70%, #99f6e4 100%);
+            background-attachment: fixed;
+            color: #0f172a;
+            min-height: 100vh;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* High Intensity Liquid Glass Effects */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border: 1.5px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 50px -12px rgba(13, 148, 136, 0.22), 
+                        0 0 0 1px rgba(255, 255, 255, 0.9) inset,
+                        0 8px 32px 0 rgba(31, 38, 135, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1.5px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 12px 36px -6px rgba(15, 23, 42, 0.08), 
+                        inset 0 2px 0 rgba(255, 255, 255, 0.98),
+                        0 4px 16px 0 rgba(20, 184, 166, 0.12);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(20, 184, 166, 0.5);
+            box-shadow: 0 18px 44px -8px rgba(20, 184, 166, 0.25), inset 0 2px 0 rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        .glass-card:active {
+            transform: scale(0.985);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(204, 251, 241, 0.8);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: #0d9488;
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.25), inset 0 1px 2px rgba(0,0,0,0.02);
+            outline: none;
+        }
+
+        .glass-pill {
+            background: rgba(204, 251, 241, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(153, 246, 228, 0.95);
+            color: #0f766e;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .glass-pill:active {
+            transform: scale(0.92);
+            background: rgba(153, 246, 228, 0.95);
+        }
+
+        .chip-selectable {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .chip-selectable.selected {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            color: white;
+            border-color: #0f766e;
+            box-shadow: 0 6px 16px rgba(20, 184, 166, 0.35);
+        }
+
+        /* Interactive Liquid Buttons */
+        .liquid-btn {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            box-shadow: 0 10px 25px rgba(20, 184, 166, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .liquid-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 32px rgba(20, 184, 166, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+
+        .liquid-btn:active {
+            transform: translateY(1px) scale(0.97);
+            box-shadow: 0 4px 14px rgba(20, 184, 166, 0.3);
+        }
+
+        .touch-bounce {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .touch-bounce:active {
+            transform: scale(0.94);
+        }
+
+        /* Animations */
+        .animate-fade-in {
+            animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-pop-in {
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .coin-pop {
+            animation: coinPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.88); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(100%); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes coinPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4) rotate(12deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(13, 148, 136, 0.4);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="flex flex-col pb-24">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-white/80 px-4 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2.5 cursor-pointer touch-bounce" onclick="navigateTo('feed')">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-500 via-teal-400 to-emerald-300 flex items-center justify-center text-white shadow-lg border border-white/90">
+                <span class="text-xl">✨</span>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-teal-700 via-teal-800 to-emerald-800 bg-clip-text text-transparent">OpenRole</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-2xl w-full mx-auto px-4 py-5 relative z-10">
+
+        <!-- ================= SECTION 1: FEED & LEADERBOARD ================= -->
+        <section id="view-feed" class="space-y-5 animate-fade-in">
+            <!-- Leaderboard Section -->
+            <div>
+                <div class="flex items-center justify-between mb-2.5 px-1">
+                    <h3 class="font-bold text-slate-700 text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-trophy text-amber-500"></i> Top Vibe Leaderboard
+                    </h3>
+                    <span class="text-[10px] text-teal-700 font-semibold">Ranked by 🪙 EXP</span>
+                </div>
+                <div id="leaderboard-container" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <!-- Dynamic Leaderboard Cards -->
+                </div>
+            </div>
+
+            <!-- Roles Feed Header & Search -->
+            <div>
+                <div class="flex items-center justify-between mb-2.5 px-1 gap-2">
+                    <h3 class="font-bold text-slate-700 text-xs flex items-center gap-1.5 whitespace-nowrap">
+                        <i class="fa-solid fa-sparkles text-teal-600"></i> Open Personal Vacancies
+                    </h3>
+                    <div class="relative w-full max-w-[200px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
+                        <input type="text" id="search-input" onkeyup="filterResumes()" placeholder="Search vibes, aims..." class="w-full glass-input text-slate-700 text-xs rounded-xl pl-8 pr-3 py-1.5">
+                    </div>
+                </div>
+                
+                <div id="feed-container" class="space-y-3.5">
+                    <!-- Dynamic Feed Cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: SINGLE ROLE VIEW ================= -->
+        <section id="view-resume" class="hidden space-y-4 animate-fade-in">
+            <div class="flex items-center justify-between">
+                <button onclick="navigateTo('feed')" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white/90 border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm hover:bg-white touch-bounce">
+                    <i class="fa-solid fa-arrow-left"></i> Roles Feed
+                </button>
+                <button onclick="shareRoleLink()" class="inline-flex items-center gap-2 text-xs font-semibold text-teal-700 glass-pill px-3.5 py-2 rounded-xl hover:bg-teal-100 shadow-sm touch-bounce">
+                    <i class="fa-solid fa-share-nodes"></i> Share Role
+                </button>
+            </div>
+
+            <article id="single-resume-card" class="glass-card rounded-3xl overflow-hidden relative">
+                <!-- Single Resume Content -->
+            </article>
+        </section>
+
+        <!-- ================= SECTION 3: CREATE PERSONAL ROLE FORM ================= -->
+        <section id="view-create" class="hidden animate-fade-in">
+            <div class="glass-panel rounded-3xl p-5 sm:p-7 space-y-4 shadow-xl">
+                <div class="border-b border-slate-200/80 pb-3">
+                    <h2 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-teal-600"></i> Post Personal Vacancy
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Define your role, primary aims, vibe, and candidate green flags in a few simple taps!</p>
+                </div>
+
+                <form id="create-resume-form" onsubmit="handleCreateResume(event)" class="space-y-4">
+                    
+                    <!-- Basic Info Group -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Your Name / Alias *</label>
+                            <input type="text" id="form-name" required placeholder="e.g. Alex M., Sky, @dev_sam" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Contact Handle (IG / Telegram) *</label>
+                            <input type="text" id="form-handle" required placeholder="e.g. @alex_vibes" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Open Role Title *</label>
+                        <input type="text" id="form-role" required placeholder="e.g. Full-Time Partner 💖, Hackathon Co-Founder 🚀, Gym Buddy 🏋️" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                    </div>
+
+                    <!-- REQUIREMENT & AIM SELECTION TOOL -->
+                    <div class="bg-teal-50/70 p-4 rounded-2xl border border-teal-100 space-y-3">
+                        <label class="block text-xs font-extrabold text-teal-900 flex items-center justify-between">
+                            <span>🎯 Primary Role Aims *</span>
+                            <span class="text-[10px] text-teal-600 font-semibold">Tap to toggle</span>
+                        </label>
+                        <div id="aim-chips-container" class="flex flex-wrap gap-1.5">
+                            <!-- Preset Aim Chips -->
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <input type="text" id="custom-aim-input" placeholder="Add custom aim..." class="flex-1 glass-input rounded-xl px-3 py-1.5 text-xs text-slate-800">
+                            <button type="button" onclick="addCustomAim()" class="px-3 py-1.5 bg-teal-600 text-white rounded-xl text-xs font-bold hover:bg-teal-700 transition-all shadow-xs touch-bounce">
+                                + Add
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pitch & Vibe Details -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Vibe Pitch & Intro *</label>
+                        <textarea id="form-bio" required rows="2.5" placeholder="Describe your vibe, what you enjoy, and what you're looking for..." class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Your Key Traits & Strengths *</label>
+                            <input type="text" id="form-experience" required placeholder="e.g. Great listener, Makes killer playlists, Good cook" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Top Candidate Skills Sought *</label>
+                            <input type="text" id="form-skills" required placeholder="e.g. Humor, Good Communication, UI Design" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        </div>
+                    </div>
+
+                    <!-- Perks & Candidate Green Flags -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Perks & Benefits Offered 🎁 *</label>
+                            <input type="text" id="form-greenflags" required placeholder="e.g. Fresh sourdough, late-night call partner" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Candidate Green Flags 💼 *</label>
+                            <input type="text" id="form-package" required placeholder="e.g. Kind heart, passionate about building" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 text-white font-bold text-sm rounded-xl liquid-btn mt-3">
+                        Publish Open Role 🚀
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-white/80 px-6 py-2.5 flex justify-around shadow-2xl">
+        <button onclick="navigateTo('feed')" id="nav-btn-feed" class="flex flex-col items-center gap-1 text-teal-700 font-bold text-xs touch-bounce">
+            <i class="fa-solid fa-shapes text-lg"></i>
+            <span class="text-[11px]">Roles Feed</span>
+        </button>
+        <button onclick="navigateTo('create')" id="nav-btn-create" class="flex flex-col items-center gap-1 text-slate-500 hover:text-teal-700 font-medium text-xs touch-bounce">
+            <i class="fa-solid fa-plus-circle text-lg"></i>
+            <span class="text-[11px]">Post Role</span>
+        </button>
+    </div>
+
+    <!-- MODAL: Apply / Pitch for Role -->
+    <div id="apply-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-6 w-full max-w-md shadow-2xl relative border border-white/80 animate-pop-in">
+            <button onclick="closeApplyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 touch-bounce">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 mb-1">
+                <i class="fa-solid fa-paper-plane text-teal-600"></i> Pitch for this Role
+            </h3>
+
+            <form onsubmit="handleProposalSubmit(event)" class="space-y-3 mt-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Your Name / Handle *</label>
+                    <input type="text" id="applicant-name" required placeholder="e.g. @candidate_alex" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Your Pitch Message *</label>
+                    <textarea id="applicant-message" required rows="3" placeholder="Pitch yourself! Why are you the perfect candidate for this role?" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></textarea>
+                </div>
+                <button type="submit" class="w-full py-2.5 text-white font-bold text-sm rounded-xl liquid-btn">
+                    Submit Pitch 📄
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Match Celebration -->
+    <div id="match-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-6 w-full max-w-md text-center shadow-2xl relative space-y-4 border border-teal-200 animate-pop-in">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-400 to-emerald-500 border border-white flex items-center justify-center mx-auto text-white text-2xl shadow-lg coin-pop">
+                🎉
+            </div>
+            <h3 class="text-xl font-black text-slate-800">OFFER EXTENDED & ACCEPTED!</h3>
+            <p class="text-xs text-slate-600" id="match-modal-text">Candidate officially chosen!</p>
+            <div class="bg-teal-50/90 p-3 rounded-xl border border-teal-200 text-xs text-teal-800 font-mono font-bold" id="match-contact-info">
+                Contact: @handle
+            </div>
+            <button onclick="closeMatchModal()" class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-all shadow-md touch-bounce">
+                Great! 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: Share Link -->
+    <div id="share-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-6 w-full max-w-md text-center shadow-2xl relative space-y-3 border border-white/90 animate-pop-in">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 touch-bounce">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto text-xl shadow-md">
+                <i class="fa-solid fa-share-nodes"></i>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-800">Share Open Role</h3>
+            <p class="text-xs text-slate-500">Copy your role link to share with candidate prospects:</p>
+            <div class="flex gap-2">
+                <input type="text" id="share-link-input" readonly class="w-full glass-input rounded-xl px-3 py-2 text-xs text-slate-700 font-mono select-all">
+                <button onclick="copyShareInput()" class="px-4 py-2 bg-teal-600 text-white font-bold text-xs rounded-xl hover:bg-teal-700 shadow-md touch-bounce">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-16 sm:bottom-6 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-6 z-50 hidden glass-panel text-slate-800 border border-teal-200 px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 animate-slide-up">
+        <span id="toast-icon">🪙</span>
+        <span id="toast-message">Notification</span>
+    </div>
+
+    <script>
+        // Production Ready State (Empty start)
+        let state = {
+            resumes: JSON.parse(localStorage.getItem('openrole_resumes')) || [],
+            currentResumeId: null,
+            targetApplyResumeId: null,
+            userVotes: JSON.parse(localStorage.getItem('openrole_voted_ids')) || []
+        };
+
+        // Personal Aims Options
+        const defaultAims = [
+            "Full-Time Partner 💖", "Side-Project Co-Founder 🚀", "Gym & Tennis Buddy 🏋️", 
+            "Late-Night Gaming Co-Op 🎮", "Concert & Foodie Partner 🍜", "Coffee & Book Buddy ☕", 
+            "Hackathon Teammate 💻", "Travel Companion ✈️"
+        ];
+        let selectedAims = ["Full-Time Partner 💖"];
+
+        function renderAimChips() {
+            const container = document.getElementById('aim-chips-container');
+            if (!container) return;
+
+            container.innerHTML = defaultAims.map(aim => {
+                const isSel = selectedAims.includes(aim);
+                return `
+                    <span onclick="toggleAimSelection('${aim.replace(/'/g, "\\'")}')" 
+                          class="chip-selectable border px-2.5 py-1 rounded-xl text-xs font-semibold shadow-2xs ${isSel ? 'selected' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-slate-50'}">
+                        ${aim} ${isSel ? '✓' : ''}
+                    </span>
+                `;
+            }).join('');
+        }
+
+        function toggleAimSelection(aim) {
+            if (selectedAims.includes(aim)) {
+                selectedAims = selectedAims.filter(a => a !== aim);
+            } else {
+                selectedAims.push(aim);
+            }
+            renderAimChips();
+        }
+
+        function addCustomAim() {
+            const input = document.getElementById('custom-aim-input');
+            const val = input.value.trim();
+            if (val && !defaultAims.includes(val)) {
+                defaultAims.push(val);
+                selectedAims.push(val);
+                input.value = '';
+                renderAimChips();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('openrole_resumes', JSON.stringify(state.resumes));
+            localStorage.setItem('openrole_voted_ids', JSON.stringify(state.userVotes));
+        }
+
+        // Navigation Controller
+        function navigateTo(viewName, resumeId = null) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+
+            const target = document.getElementById(`view-${viewName}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.remove('animate-fade-in');
+                void target.offsetWidth; // Reflow trigger
+                target.classList.add('animate-fade-in');
+            }
+
+            // Bottom Nav Styling Update
+            const btnFeed = document.getElementById('nav-btn-feed');
+            const btnCreate = document.getElementById('nav-btn-create');
+
+            if (viewName === 'feed') {
+                btnFeed.className = "flex flex-col items-center gap-1 text-teal-700 font-bold text-xs touch-bounce";
+                btnCreate.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-teal-700 font-medium text-xs touch-bounce";
+                renderLeaderboard();
+                renderFeed();
+            } else if (viewName === 'create') {
+                btnCreate.className = "flex flex-col items-center gap-1 text-teal-700 font-bold text-xs touch-bounce";
+                btnFeed.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-teal-700 font-medium text-xs touch-bounce";
+                renderAimChips();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (viewName === 'resume' && resumeId) {
+                state.currentResumeId = resumeId;
+                incrementViews(resumeId);
+                renderSingleResume(resumeId);
+            }
+        }
+
+        function incrementViews(resumeId) {
+            const res = state.resumes.find(r => r.id === resumeId);
+            if (res) {
+                res.views = (res.views || 0) + 1;
+                saveData();
+            }
+        }
+
+        // Render Leaderboard
+        function renderLeaderboard() {
+            const leaderboardContainer = document.getElementById('leaderboard-container');
+            const sorted = [...state.resumes].sort((a, b) => b.votes - a.votes).slice(0, 3);
+
+            if (sorted.length === 0) {
+                leaderboardContainer.innerHTML = `
+                    <div class="col-span-full glass-card p-4 rounded-2xl text-center text-xs text-slate-500 border border-teal-100">
+                        No roles published yet! Post a vacancy to claim rank #1.
+                    </div>
+                `;
+                return;
+            }
+
+            const badges = [
+                { badge: '🥇 #1 Top Vibe', class: 'text-amber-800 bg-amber-50/90 border-amber-200' },
+                { badge: '🥈 #2 Runner-Up', class: 'text-slate-700 bg-slate-100/90 border-slate-200' },
+                { badge: '🥉 #3 Rising', class: 'text-teal-800 bg-teal-50/90 border-teal-200' }
+            ];
+
+            leaderboardContainer.innerHTML = sorted.map((res, index) => {
+                const badgeInfo = badges[index] || badges[2];
+                return `
+                    <div onclick="navigateTo('resume', '${res.id}')" class="glass-card p-3 rounded-2xl cursor-pointer hover:bg-white transition-all shadow-xs border border-teal-100/80">
+                        <div class="flex items-center justify-between mb-1 text-xs">
+                            <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full border ${badgeInfo.class}">
+                                ${badgeInfo.badge}
+                            </span>
+                            <span class="text-[11px] font-bold text-amber-600">
+                                🪙 ${res.votes} EXP
+                            </span>
+                        </div>
+                        <h4 class="font-extrabold text-xs text-slate-800 truncate">${res.name}</h4>
+                        <p class="text-[11px] text-teal-700 font-semibold truncate">${res.role}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Feed
+        function renderFeed() {
+            const feedContainer = document.getElementById('feed-container');
+            const query = (document.getElementById('search-input')?.value || '').toLowerCase();
+
+            const filtered = state.resumes.filter(r => 
+                r.name.toLowerCase().includes(query) || 
+                r.role.toLowerCase().includes(query) ||
+                (r.aims && r.aims.some(a => a.toLowerCase().includes(query))) ||
+                r.skills.some(s => s.toLowerCase().includes(query))
+            );
+
+            if (filtered.length === 0) {
+                feedContainer.innerHTML = `
+                    <div class="glass-panel p-8 rounded-3xl text-center space-y-3">
+                        <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto text-xl font-bold shadow-xs">
+                            ✨
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-800">No Open Roles Available</h4>
+                        <p class="text-xs text-slate-500 max-w-xs mx-auto">Be the first to publish a personal micro-resume role!</p>
+                        <button onclick="navigateTo('create')" class="px-4 py-2 text-xs font-bold text-white liquid-btn rounded-xl mt-1">
+                            Create First Role 🚀
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            feedContainer.innerHTML = filtered.map(res => `
+                <div class="glass-card rounded-3xl p-4 space-y-3 border border-slate-200/90">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-teal-800 bg-teal-50/90 border border-teal-200 px-2.5 py-0.5 rounded-lg inline-block mb-1 shadow-2xs">
+                                ${res.role}
+                            </span>
+                            <h3 class="font-extrabold text-sm text-slate-800">${res.name}</h3>
+                            <p class="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">${res.bio}</p>
+                        </div>
+                        <button onclick="handleVote('${res.id}', event)" class="flex flex-col items-center justify-center glass-pill px-2.5 py-1.5 rounded-xl shadow-2xs hover:bg-teal-100">
+                            <span class="text-sm">🪙</span>
+                            <span class="text-[10px] font-extrabold text-teal-800">${res.votes}</span>
+                        </button>
+                    </div>
+
+                    ${res.aims && res.aims.length > 0 ? `
+                        <div class="flex flex-wrap gap-1">
+                            ${res.aims.map(aim => `<span class="bg-teal-100/70 border border-teal-200 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-2xs">${aim}</span>`).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="flex flex-wrap gap-1">
+                        ${res.skills.slice(0, 3).map(skill => `<span class="bg-white/90 border border-slate-200 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-md shadow-2xs">${skill}</span>`).join('')}
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-3 text-slate-500 text-[11px]">
+                            <span class="flex items-center gap-1 font-medium"><i class="fa-regular fa-eye text-[10px]"></i> ${res.views || 0}</span>
+                            <span class="flex items-center gap-1 font-medium"><i class="fa-regular fa-paper-plane text-[10px]"></i> ${(res.applications || []).length}</span>
+                        </div>
+                        <button onclick="navigateTo('resume', '${res.id}')" class="text-teal-700 font-bold text-xs flex items-center gap-1 touch-bounce hover:text-teal-800">
+                            View Role <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterResumes() {
+            renderFeed();
+        }
+
+        // Render Single Resume View
+        function renderSingleResume(id) {
+            const res = state.resumes.find(r => r.id === id);
+            if (!res) return navigateTo('feed');
+
+            const container = document.getElementById('single-resume-card');
+            const hasVoted = state.userVotes.includes(res.id);
+            const isOwner = !!res.isOwner;
+
+            container.innerHTML = `
+                <div class="bg-gradient-to-r from-teal-50/90 via-emerald-50/80 to-slate-50/90 p-5 border-b border-slate-200/80">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="glass-pill text-teal-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
+                            Position Open
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-500 bg-white/90 px-2.5 py-0.5 rounded-full border border-slate-200 flex items-center gap-1 shadow-2xs">
+                            👁️ ${res.views || 1} Views
+                        </span>
+                    </div>
+                    <h2 class="text-xl font-extrabold text-slate-800">${res.name}</h2>
+                    <p class="text-xs font-bold text-teal-700">${res.role}</p>
+                </div>
+
+                <div class="p-5 space-y-4 text-xs">
+                    ${res.aims && res.aims.length > 0 ? `
+                        <div>
+                            <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Primary Role Aims</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${res.aims.map(aim => `<span class="bg-teal-600 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-xs">${aim}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div>
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Vibe Bio</h4>
+                        <p class="text-slate-700 bg-white/90 p-3 rounded-xl border border-slate-200 leading-relaxed shadow-2xs">${res.bio}</p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Key Traits & Background</h4>
+                        <div class="bg-white/90 p-3 rounded-xl border border-slate-200 text-slate-700 font-medium shadow-2xs">
+                            ${res.experience}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Skills Sought</h4>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${res.skills.map(skill => `<span class="bg-white/90 border border-slate-200 text-slate-700 text-xs px-2.5 py-1 rounded-lg font-medium shadow-2xs">${skill}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Perks & Benefits 🎁</h4>
+                        <div class="bg-emerald-50/90 p-3 rounded-xl border border-emerald-200 text-emerald-800 font-medium shadow-2xs">
+                            ${res.greenFlags}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Requirements & Green Flags 💼</h4>
+                        <div class="bg-teal-50/90 p-3 rounded-xl border border-teal-200 text-teal-800 font-medium shadow-2xs">
+                            ${res.package}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM CONTROLS -->
+                <div class="bg-slate-50/90 border-t border-slate-200/80 p-4 space-y-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="handleVote('${res.id}', event)" class="py-2.5 px-3 ${hasVoted ? 'bg-teal-100 text-teal-900 border-teal-300' : 'bg-white/90 text-slate-700 border border-slate-200 hover:bg-white'} rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs touch-bounce">
+                            <span class="${hasVoted ? 'coin-pop' : ''}">🪙</span>
+                            <span>${hasVoted ? 'Tipped' : 'Tip EXP'} (${res.votes})</span>
+                        </button>
+                        <button onclick="openApplyModal('${res.id}')" class="py-2.5 px-3 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 liquid-btn shadow-md">
+                            <i class="fa-solid fa-file-pen"></i>
+                            <span>Submit Pitch 📄</span>
+                        </button>
+                    </div>
+
+                    <!-- Owner Controls -->
+                    ${isOwner ? `
+                        <div class="pt-3 border-t border-slate-200/80 space-y-2">
+                            <span class="text-[10px] font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-1">
+                                <i class="fa-solid fa-user-gear text-teal-700"></i> Role Activity Log
+                            </span>
+                            <div class="space-y-2">
+                                ${(res.applications && res.applications.length > 0)
+                                    ? res.applications.map(app => `
+                                        <div class="bg-white/90 p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs shadow-2xs">
+                                            <div>
+                                                <span class="font-bold text-slate-800">${app.name}</span>
+                                                <p class="text-[11px] text-slate-500 italic">${app.message}</p>
+                                            </div>
+                                            ${app.accepted 
+                                                ? `<span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md border border-emerald-200">HIRED! 🎉</span>` 
+                                                : `<button onclick="acceptProposal('${res.id}', '${app.id}')" class="px-3 py-1 bg-teal-600 text-white font-bold text-[11px] rounded-lg shadow-xs hover:bg-teal-700 touch-bounce">EXTEND OFFER 📄</button>`}
+                                        </div>
+                                      `).join('')
+                                    : `<p class="text-slate-400 text-xs italic">No pitches received yet.</p>`}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Action: Upvoting
+        function handleVote(resId, event) {
+            if (event) event.stopPropagation();
+
+            const res = state.resumes.find(r => r.id === resId);
+            if (!res) return;
+
+            const hasVoted = state.userVotes.includes(resId);
+            if (hasVoted) {
+                res.votes--;
+                state.userVotes = state.userVotes.filter(id => id !== resId);
+                showToast('EXP Coin removed');
+            } else {
+                res.votes++;
+                state.userVotes.push(resId);
+                showToast('+1 🪙 EXP Coin Tipped!');
+            }
+
+            saveData();
+
+            if (!document.getElementById('view-resume').classList.contains('hidden')) {
+                renderSingleResume(resId);
+            } else {
+                renderLeaderboard();
+                renderFeed();
+            }
+        }
+
+        // Action: Create Role Micro-Resume
+        function handleCreateResume(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('form-name').value.trim();
+            const role = document.getElementById('form-role').value.trim();
+            const handle = document.getElementById('form-handle').value.trim();
+            const bio = document.getElementById('form-bio').value.trim();
+            const experience = document.getElementById('form-experience').value.trim();
+            const skillsStr = document.getElementById('form-skills').value.trim();
+            const greenFlags = document.getElementById('form-greenflags').value.trim();
+            const packageStr = document.getElementById('form-package').value.trim();
+
+            const newResume = {
+                id: 'role_' + Date.now(),
+                isOwner: true,
+                name,
+                role,
+                handle,
+                aims: [...selectedAims],
+                bio,
+                experience,
+                skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean),
+                greenFlags,
+                package: packageStr,
+                votes: 1,
+                views: 1,
+                applications: []
+            };
+
+            state.resumes.unshift(newResume);
+            state.userVotes.push(newResume.id);
+            saveData();
+
+            document.getElementById('create-resume-form').reset();
+            selectedAims = ["Full-Time Partner 💖"];
+            showToast('OpenRole Published! 🚀');
+            navigateTo('resume', newResume.id);
+        }
+
+        // Modal Controls
+        function openApplyModal(resId) {
+            state.targetApplyResumeId = resId;
+            document.getElementById('apply-modal').classList.remove('hidden');
+        }
+
+        function closeApplyModal() {
+            document.getElementById('apply-modal').classList.add('hidden');
+        }
+
+        function handleProposalSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('applicant-name').value.trim();
+            const message = document.getElementById('applicant-message').value.trim();
+
+            const res = state.resumes.find(r => r.id === state.targetApplyResumeId);
+            if (res) {
+                if (!res.applications) res.applications = [];
+                res.applications.push({
+                    id: 'pitch_' + Date.now(),
+                    name,
+                    message,
+                    accepted: false
+                });
+                saveData();
+                showToast('Pitch Submitted! 📄');
+                closeApplyModal();
+
+                document.getElementById('applicant-name').value = '';
+                document.getElementById('applicant-message').value = '';
+
+                renderSingleResume(res.id);
+            }
+        }
+
+        function acceptProposal(resId, appId) {
+            const res = state.resumes.find(r => r.id === resId);
+            if (!res) return;
+
+            const app = res.applications.find(a => a.id === appId);
+            if (app) {
+                app.accepted = true;
+                saveData();
+
+                document.getElementById('match-modal-text').textContent = `Offer extended to ${app.name}!`;
+                document.getElementById('match-contact-info').textContent = `Contact Handle: ${res.handle}`;
+                document.getElementById('match-modal').classList.remove('hidden');
+
+                renderSingleResume(res.id);
+            }
+        }
+
+        function closeMatchModal() {
+            document.getElementById('match-modal').classList.add('hidden');
+        }
+
+        // Functional Sharing Handler
+        function shareRoleLink() {
+            const hash = state.currentResumeId ? `#resume/${state.currentResumeId}` : '';
+            const shareableURL = `${window.location.origin}${window.location.pathname}${hash}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'OpenRole - Personal Vacancy',
+                    text: 'Check out this Open Role personal vacancy!',
+                    url: shareableURL
+                }).catch(() => {
+                    openShareModalWithURL(shareableURL);
+                });
+            } else {
+                openShareModalWithURL(shareableURL);
+            }
+        }
+
+        function openShareModalWithURL(shareableURL) {
+            document.getElementById('share-link-input').value = shareableURL;
+            document.getElementById('share-modal').classList.remove('hidden');
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareableURL).catch(() => {});
+            }
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+        }
+
+        function copyShareInput() {
+            const input = document.getElementById('share-link-input');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                showToast('Link copied to clipboard! 📋');
+                closeShareModal();
+            } catch (err) {
+                showToast('Please copy the link manually.');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toast-message');
+
+            messageEl.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Hash Routing Listener for Deep Links
+        window.addEventListener('hashchange', function() {
+            const hash = window.location.hash;
+            if (hash && hash.includes('#resume/')) {
+                const targetId = hash.split('#resume/')[1];
+                navigateTo('resume', targetId);
+            } else if (!hash || hash === '#feed') {
+                navigateTo('feed');
+            }
+        });
+
+        // Initial Load
+        window.onload = function() {
+            saveData();
+            const hash = window.location.hash;
+            if (hash && hash.includes('#resume/')) {
+                const targetId = hash.split('#resume/')[1];
+                navigateTo('resume', targetId);
+            } else {
+                navigateTo('feed');
+            }
+        };
+    </script>
+</body>
+</html>
