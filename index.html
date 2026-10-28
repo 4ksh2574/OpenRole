@@ -355,21 +355,19 @@
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
             <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 mb-1">
-                <i class="fa-solid fa-paper-plane text-teal-600"></i> Pitch for this Role
+                <i class="fa-solid fa-paper-plane text-teal-600"></i> Send a Job Offer
             </h3>
-
+            <p class="text-xs text-slate-500">Your contact details stay private until the resume owner accepts your offer.</p>
             <form onsubmit="handleProposalSubmit(event)" class="space-y-3 mt-3">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Your Name / Handle *</label>
-                    <input type="text" id="applicant-name" required placeholder="e.g. @candidate_alex" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Your Pitch Message *</label>
-                    <textarea id="applicant-message" required rows="3" placeholder="Pitch yourself! Why are you the perfect candidate for this role?" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></textarea>
-                </div>
-                <button type="submit" class="w-full py-2.5 text-white font-bold text-sm rounded-xl liquid-btn">
-                    Submit Pitch 📄
-                </button>
+                <div><label class="block text-xs font-bold text-slate-700 mb-1">Your Name / Company *</label>
+                    <input type="text" id="applicant-name" required placeholder="Name or company" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></div>
+                <div><label class="block text-xs font-bold text-slate-700 mb-1">Your Username (optional)</label>
+                    <input type="text" id="applicant-username" placeholder="@yourname" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></div>
+                <div><label class="block text-xs font-bold text-slate-700 mb-1">Contact details *</label>
+                    <input type="text" id="applicant-contact" required placeholder="Email, phone, or professional handle" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></div>
+                <div><label class="block text-xs font-bold text-slate-700 mb-1">Offer message *</label>
+                    <textarea id="applicant-message" required rows="3" placeholder="Describe the opportunity and relevant details." class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></textarea></div>
+                <button type="submit" class="w-full py-2.5 text-white font-bold text-sm rounded-xl liquid-btn">Send Offer 📩</button>
             </form>
         </div>
     </div>
@@ -837,31 +835,16 @@
                         </button>
                     </div>
 
-                    <!-- Owner Controls -->
+                    <!-- Owner-only offers are loaded from Firestore; private contact data is not embedded in the public resume. -->
                     ${isOwner ? `
                         <div class="pt-3 border-t border-slate-200/80 space-y-2">
-                            <span class="text-[10px] font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-1">
-                                <i class="fa-solid fa-user-gear text-teal-700"></i> Role Activity Log
-                            </span>
-                            <div class="space-y-2">
-                                ${(res.applications && res.applications.length > 0)
-                                    ? res.applications.map(app => `
-                                        <div class="bg-white/90 p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs shadow-2xs">
-                                            <div>
-                                                <span class="font-bold text-slate-800">${app.name}</span>
-                                                <p class="text-[11px] text-slate-500 italic">${app.message}</p>
-                                            </div>
-                                            ${app.accepted 
-                                                ? `<span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md border border-emerald-200">HIRED! 🎉</span>` 
-                                                : `<button onclick="acceptProposal('${res.id}', '${app.id}')" class="px-3 py-1 bg-teal-600 text-white font-bold text-[11px] rounded-lg shadow-xs hover:bg-teal-700 touch-bounce">EXTEND OFFER 📄</button>`}
-                                        </div>
-                                      `).join('')
-                                    : `<p class="text-slate-400 text-xs italic">No pitches received yet.</p>`}
-                            </div>
+                            <span class="text-[10px] font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-user-gear text-teal-700"></i> Job Offers</span>
+                            <div id="owner-offers" class="space-y-2"><p class="text-slate-400 text-xs italic">Loading offers…</p></div>
                         </div>
                     ` : ''}
                 </div>
             `;
+            if (isOwner) loadOwnerOffers(res.id);
         }
 
         // Action: Upvoting
@@ -943,51 +926,86 @@
             document.getElementById('apply-modal').classList.add('hidden');
         }
 
-        function handleProposalSubmit(e) {
+        async function handleProposalSubmit(e) {
             e.preventDefault();
-
             const name = document.getElementById('applicant-name').value.trim();
+            const username = document.getElementById('applicant-username').value.trim();
+            const contact = document.getElementById('applicant-contact').value.trim();
             const message = document.getElementById('applicant-message').value.trim();
-
-            const res = state.resumes.find(r => r.id === state.targetApplyResumeId);
-            if (res) {
-                if (!res.applications) res.applications = [];
-                res.applications.push({
-                    id: 'pitch_' + Date.now(),
-                    name,
-                    message,
-                    accepted: false
-                });
-                saveData();
-                if (cloudSyncReady && res.ownerUid && res.ownerUid !== state.currentUserId) {
-                    showToast('Pitch saved on this device only in this version.');
-                } else {
-                    showToast('Pitch Submitted! 📄');
-                }
+            const res = state.resumes.find(r => String(r.id) === String(state.targetApplyResumeId));
+            if (!res) return;
+            if (!cloudSyncReady || !cloudDb || !cloudUser) { showToast('Offers require cloud sync. Reload and try again.'); return; }
+            if (!res.ownerUid || res.ownerUid === cloudUser.uid) { showToast('You cannot send an offer to your own resume.'); return; }
+            if (res.status === 'filled') { showToast('This role has already been filled.'); return; }
+            const offerId = 'offer_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            const offerRef = cloudDb.collection('openrole_roles').doc(String(res.id)).collection('offers').doc(offerId);
+            try {
+                await offerRef.set({ roleOwnerUid: res.ownerUid, offererUid: cloudUser.uid, name, username, message, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                await offerRef.collection('private').doc('contact').set({ offererUid: cloudUser.uid, name, username, contactHandle: contact, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 closeApplyModal();
-
-                document.getElementById('applicant-name').value = '';
-                document.getElementById('applicant-message').value = '';
-
+                ['applicant-name','applicant-username','applicant-contact','applicant-message'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                showToast('Job offer sent privately 📩');
                 renderSingleResume(res.id);
+            } catch (error) {
+                console.error('OpenRole offer submission failed:', error);
+                showToast('Could not send offer. Check Firestore rules.');
             }
         }
 
-        function acceptProposal(resId, appId) {
-            const res = state.resumes.find(r => r.id === resId);
-            if (!res) return;
-
-            const app = res.applications.find(a => a.id === appId);
-            if (app) {
-                app.accepted = true;
-                saveData();
-
-                document.getElementById('match-modal-text').textContent = `Offer extended to ${app.name}!`;
-                document.getElementById('match-contact-info').textContent = `Contact Handle: ${res.handle}`;
-                document.getElementById('match-modal').classList.remove('hidden');
-
-                renderSingleResume(res.id);
+        async function loadOwnerOffers(resId) {
+            const container = document.getElementById('owner-offers');
+            if (!container || !cloudDb || !cloudUser) return;
+            try {
+                const snap = await cloudDb.collection('openrole_roles').doc(String(resId)).collection('offers').orderBy('createdAt', 'desc').get();
+                if (!document.getElementById('owner-offers')) return;
+                if (snap.empty) { container.innerHTML = '<p class="text-slate-400 text-xs italic">No offers received yet.</p>'; return; }
+                container.innerHTML = '';
+                for (const doc of snap.docs) {
+                    const offer = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'bg-white/90 p-3 rounded-xl border border-slate-200 text-xs shadow-2xs space-y-2';
+                    const title = document.createElement('div'); title.className = 'font-bold text-slate-800'; title.textContent = offer.name || 'Employer'; card.appendChild(title);
+                    const msg = document.createElement('p'); msg.className = 'text-[11px] text-slate-600'; msg.textContent = offer.message || ''; card.appendChild(msg);
+                    if (offer.username) { const u = document.createElement('p'); u.className = 'text-[11px] text-slate-500'; u.textContent = offer.username; card.appendChild(u); }
+                    const status = document.createElement('p'); status.className = 'text-[10px] font-bold uppercase'; status.textContent = offer.status === 'accepted' ? 'Accepted' : offer.status === 'pending' ? 'Pending' : 'Closed'; card.appendChild(status);
+                    if (offer.status === 'pending') {
+                        const button = document.createElement('button'); button.className = 'px-3 py-1 bg-teal-600 text-white font-bold text-[11px] rounded-lg shadow-xs'; button.textContent = 'ACCEPT OFFER'; button.onclick = () => acceptProposal(resId, doc.id); card.appendChild(button);
+                    }
+                    if (offer.status === 'accepted') {
+                        try {
+                            const contactSnap = await doc.ref.collection('private').doc('contact').get();
+                            if (contactSnap.exists) { const contact = contactSnap.data(); const details = document.createElement('p'); details.className = 'text-[11px] text-emerald-800 font-semibold break-words'; details.textContent = 'Employer contact: ' + (contact.contactHandle || 'Not provided'); card.appendChild(details); }
+                        } catch (error) { console.error('Could not load accepted offer contact:', error); }
+                    }
+                    container.appendChild(card);
+                }
+            } catch (error) {
+                console.error('Could not load offers:', error);
+                container.innerHTML = '<p class="text-rose-600 text-xs">Offers could not be loaded. Check Firestore rules.</p>';
             }
+        }
+
+        async function acceptProposal(resId, offerId) {
+            const res = state.resumes.find(r => String(r.id) === String(resId));
+            if (!res || !cloudDb || !cloudUser || !res.ownerUid || res.ownerUid !== cloudUser.uid) { showToast('Only the resume creator can accept offers.'); return; }
+            const roleRef = cloudDb.collection('openrole_roles').doc(String(resId));
+            const offerRef = roleRef.collection('offers').doc(String(offerId));
+            try {
+                await cloudDb.runTransaction(async transaction => {
+                    const roleSnap = await transaction.get(roleRef);
+                    const offerSnap = await transaction.get(offerRef);
+                    if (!roleSnap.exists || !offerSnap.exists) throw new Error('Role or offer not found.');
+                    if (roleSnap.data().ownerUid !== cloudUser.uid) throw new Error('Only the resume owner can accept.');
+                    if (roleSnap.data().status === 'filled') throw new Error('This role is already filled.');
+                    if (offerSnap.data().status !== 'pending' || offerSnap.data().roleOwnerUid !== cloudUser.uid) throw new Error('Offer is no longer pending.');
+                    transaction.update(offerRef, { status: 'accepted', acceptedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    transaction.update(roleRef, { status: 'filled', selectedOfferId: String(offerId) });
+                });
+                document.getElementById('match-modal-text').textContent = 'You accepted the job offer. Employer contact is now visible only to you.';
+                document.getElementById('match-contact-info').textContent = 'Contact details are available in the Job Offers section.';
+                document.getElementById('match-modal').classList.remove('hidden');
+                renderSingleResume(resId);
+            } catch (error) { console.error('Could not accept offer:', error); showToast(error.message || 'Could not accept offer. Check Firestore rules.'); }
         }
 
         function closeMatchModal() {
