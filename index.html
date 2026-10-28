@@ -7,7 +7,7 @@
     
     <!-- Open Graph / Social Media Meta Tags -->
     <meta property="og:title" content="OpenRole - Personal Vacancy & Micro-Resume" />
-    <meta property="og:description" content="Post a vacancy for your life: dating, side-projects, co-op gaming, or gym accountability!" />
+    <meta property="og:description" content="Create and discover personal vacancies for projects, gaming, fitness, and shared interests." />
     <meta property="og:type" content="website" />
     
     <!-- Tailwind CSS CDN -->
@@ -39,10 +39,22 @@
         }
 
 
-        .avatar-choice { background: rgba(255,255,255,.88); border: 1px solid rgba(203,213,225,.9); border-radius: 14px; padding: 8px 5px; text-align:center; transition: .18s ease; }
-        .avatar-choice img { width: 64px; height: 64px; object-fit: cover; object-position: center 30%; border-radius: 50%; margin: 0 auto 6px; display:block; }
-        .avatar-choice.selected { border-color: #0d9488; box-shadow: 0 0 0 2px rgba(13,148,136,.22); background: #f0fdfa; }
-        .avatar-choice span { display:block; font-size:10px; line-height:1.25; font-weight:800; color:#334155; }
+
+        .share-humour-card {
+            transform: rotate(-1.25deg);
+            transform-origin: center;
+            transition: transform 260ms cubic-bezier(.2,.8,.2,1), box-shadow 260ms ease;
+            cursor: pointer;
+            background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(204,251,241,.84), rgba(224,242,254,.88));
+            box-shadow: 0 8px 20px rgba(13,148,136,.12), inset 0 1px 0 rgba(255,255,255,.98);
+        }
+        .share-humour-card.is-straight {
+            transform: rotate(0deg);
+            box-shadow: 0 10px 24px rgba(13,148,136,.17), inset 0 1px 0 rgba(255,255,255,.98);
+        }
+        .fun-font {
+            font-family: 'Comic Sans MS', 'Trebuchet MS', cursive;
+        }
 
         /* High Intensity Liquid Glass Effects */
         .glass-panel {
@@ -208,7 +220,6 @@
 
     <!-- Main Container -->
     <main class="flex-1 max-w-2xl w-full mx-auto px-4 py-5 relative z-10">
-
         <!-- ================= SECTION 1: FEED & LEADERBOARD ================= -->
         <section id="view-feed" class="space-y-5 animate-fade-in">
             <!-- Leaderboard Section -->
@@ -224,11 +235,11 @@
                 </div>
             </div>
 
-            <!-- Roles Feed Header & Search -->
+            <!-- Vacancies Header & Search -->
             <div>
                 <div class="flex items-center justify-between mb-2.5 px-1 gap-2">
                     <h3 class="font-bold text-slate-700 text-xs flex items-center gap-1.5 whitespace-nowrap">
-                        <i class="fa-solid fa-sparkles text-teal-600"></i> Open Personal Vacancies
+                        <i class="fa-solid fa-sparkles text-teal-600"></i> Open Vacancies
                     </h3>
                     <div class="relative w-full max-w-[200px]">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
@@ -246,7 +257,7 @@
         <section id="view-resume" class="hidden space-y-4 animate-fade-in">
             <div class="flex items-center justify-between">
                 <button onclick="navigateTo('feed')" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white/90 border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm hover:bg-white touch-bounce">
-                    <i class="fa-solid fa-arrow-left"></i> Roles Feed
+                    <i class="fa-solid fa-arrow-left"></i> Vacancies
                 </button>
                 <button onclick="shareRoleLink()" class="inline-flex items-center gap-2 text-xs font-semibold text-teal-700 glass-pill px-3.5 py-2 rounded-xl hover:bg-teal-100 shadow-sm touch-bounce">
                     <i class="fa-solid fa-share-nodes"></i> Share Role
@@ -263,9 +274,9 @@
             <div class="glass-panel rounded-3xl p-5 sm:p-7 space-y-4 shadow-xl">
                 <div class="border-b border-slate-200/80 pb-3">
                     <h2 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles text-teal-600"></i> Post Personal Vacancy
+                        <i class="fa-solid fa-wand-magic-sparkles text-teal-600"></i> Create Your Resume
                     </h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Define your role, primary aims, vibe, and candidate green flags in a few simple taps!</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Show employers what you are looking for and what you bring to the role.</p>
                 </div>
 
                 <form id="create-resume-form" onsubmit="handleCreateResume(event)" class="space-y-4">
@@ -273,41 +284,35 @@
                     <!-- Basic Info Group -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Your Name / Alias *</label>
-                            <input type="text" id="form-name" required placeholder="e.g. Alex M., Sky, @dev_sam" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Name / Alias *</label>
+                            <input type="text" id="form-name" maxlength="60" required placeholder="e.g. Alex M., Sky, @dev_sam" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Contact Handle (IG / Telegram) *</label>
-                            <input type="text" id="form-handle" required placeholder="e.g. @alex_vibes" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Contact Handle *</label>
+                            <input type="text" id="form-handle" maxlength="100" required placeholder="e.g. @alex_vibes" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Open Role Title *</label>
-                        <input type="text" id="form-role" required placeholder="e.g. Full-Time Partner 💖, Hackathon Co-Founder 🚀, Gym Buddy 🏋️" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Choose gender *</label>
+                        <select id="form-gender" required onchange="renderAvatarChoices()" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                        <p class="text-[10px] text-slate-500 mt-1">Now choose the portrait you want on your resume.</p>
+                        <div id="avatar-choices" class="grid grid-cols-3 gap-3 mt-3"></div>
+                        <input type="hidden" id="form-avatar" value="male-casual" required>
                     </div>
 
-
-                    <!-- Gender-based avatar selection: 12 fixed portraits -->
-                    <div class="rounded-2xl border border-teal-100 bg-white/70 p-3.5 space-y-3">
-                        <div>
-                            <label for="form-gender" class="block text-xs font-extrabold text-slate-700 mb-1">Choose your avatar style *</label>
-                            <select id="form-gender" required onchange="renderAvatarChoices()" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
-                                <option value="">Select a group first…</option>
-                                <option value="male">Male avatars</option>
-                                <option value="female">Female avatars</option>
-                            </select>
-                            <p class="text-[10px] text-slate-500 mt-1">Choose the group, then tap one of its six portraits. No random assignment.</p>
-                        </div>
-                        <div id="avatar-picker" class="grid grid-cols-3 gap-2">
-                            <p class="col-span-3 text-center text-xs text-slate-400 py-3">Your six portraits will appear here.</p>
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Role You’re Looking For *</label>
+                        <input type="text" id="form-role" maxlength="80" required placeholder="e.g. Frontend Developer, Project Partner, Gaming Teammate" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
                     </div>
 
                     <!-- REQUIREMENT & AIM SELECTION TOOL -->
                     <div class="bg-teal-50/70 p-4 rounded-2xl border border-teal-100 space-y-3">
                         <label class="block text-xs font-extrabold text-teal-900 flex items-center justify-between">
-                            <span>🎯 Primary Role Aims *</span>
+                            <span>🎯 Interested In *</span>
                             <span class="text-[10px] text-teal-600 font-semibold">Tap to toggle</span>
                         </label>
                         <div id="aim-chips-container" class="flex flex-wrap gap-1.5">
@@ -323,66 +328,49 @@
 
                     <!-- Pitch & Vibe Details -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Vibe Pitch & Intro *</label>
-                        <textarea id="form-bio" required rows="2.5" placeholder="Describe your vibe, what you enjoy, and what you're looking for..." class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></textarea>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Resume / About Me *</label>
+                        <textarea id="form-bio" required maxlength="500" rows="2" placeholder="Describe your experience, goals, and the kind of opportunity you want..." class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Your Key Traits & Strengths *</label>
-                            <input type="text" id="form-experience" required placeholder="e.g. Great listener, Makes killer playlists, Good cook" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Top Candidate Skills Sought *</label>
-                            <input type="text" id="form-skills" required placeholder="e.g. Humor, Good Communication, UI Design" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Key Skills / Strengths (optional)</label>
+                        <input type="text" id="form-experience" maxlength="180" placeholder="e.g. Communication, design, reliability" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        <input type="hidden" id="form-skills" value="">
                     </div>
 
-                    <!-- Perks & Candidate Green Flags -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Perks & Benefits Offered 🎁 *</label>
-                            <input type="text" id="form-greenflags" required placeholder="e.g. Fresh sourdough, late-night call partner" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Candidate Green Flags 💼 *</label>
-                            <input type="text" id="form-package" required placeholder="e.g. Kind heart, passionate about building" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">What You Bring / Preferences (optional)</label>
+                        <input type="text" id="form-greenflags" maxlength="220" placeholder="Your strengths, preferences, or ideal work environment" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
+                        <input type="hidden" id="form-package" value="">
                     </div>
 
                     <button type="submit" class="w-full py-3 text-white font-bold text-sm rounded-xl liquid-btn mt-3">
-                        Publish Open Role 🚀
+                        Publish Resume
                     </button>
                 </form>
             </div>
         </section>
 
-        <!-- Mata Rani devotional tile -->
-        <section id="mata-rani-card" class="mt-5 mb-5 relative overflow-hidden rounded-3xl border border-rose-100/90 bg-gradient-to-r from-rose-50/95 via-amber-50/90 to-orange-50/95 p-5 shadow-lg">
-            <div class="absolute right-3 bottom-0 text-[5.5rem] leading-none opacity-[0.13] pointer-events-none select-none" aria-hidden="true">🙏</div>
-            <div class="absolute right-12 top-2 text-4xl opacity-[0.10] pointer-events-none select-none" aria-hidden="true">🛕</div>
-            <div class="relative z-10 max-w-[78%]" style="font-family:'Comic Sans MS','Comic Sans',cursive;">
-                <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-rose-500 mb-1">श्रद्धा • शक्ति • आशीर्वाद</p>
-                <h3 class="text-lg font-extrabold text-rose-900">जय माता दी 🙏</h3>
-                <p class="mt-1 text-sm leading-relaxed text-rose-800">माता रानी सब पर अपनी कृपा बनाए रखें।</p>
-            </div>
-        </section>
-
-        <footer class="pb-3 pt-1 text-center">
-            <a href="https://essential.oneapp.dev" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-slate-500 hover:text-teal-700 transition-colors">Created by 4ksh2574</a>
-        </footer>
-
     </main>
+
+    <!-- Clickable creator credit -->
+    <a href="https://essential.oneapp.dev" target="_blank" rel="noopener noreferrer"
+       aria-label="Created by 4ksh2574 — visit essential.oneapp.dev"
+       class="fixed right-3 bottom-[4.8rem] z-40 select-none opacity-80 hover:opacity-100 transition-opacity focus:outline-none focus:ring-2 focus:ring-teal-500 rounded-full">
+        <span class="text-[9px] font-bold tracking-wide text-teal-900 bg-white/80 backdrop-blur-sm border border-white/90 rounded-full px-2.5 py-1 shadow-sm hover:shadow-md inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Created by 4ksh2574
+        </span>
+    </a>
 
     <!-- Bottom Navigation Bar -->
     <div class="fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-white/80 px-6 py-2.5 flex justify-around shadow-2xl">
         <button onclick="navigateTo('feed')" id="nav-btn-feed" class="flex flex-col items-center gap-1 text-teal-700 font-bold text-xs touch-bounce">
             <i class="fa-solid fa-shapes text-lg"></i>
-            <span class="text-[11px]">Roles Feed</span>
+            <span class="text-[11px]">Resumes</span>
         </button>
         <button onclick="navigateTo('create')" id="nav-btn-create" class="flex flex-col items-center gap-1 text-slate-500 hover:text-teal-700 font-medium text-xs touch-bounce">
             <i class="fa-solid fa-plus-circle text-lg"></i>
-            <span class="text-[11px]">Post Role</span>
+            <span class="text-[11px]">Post Resume</span>
         </button>
     </div>
 
@@ -393,812 +381,17 @@
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
             <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 mb-1">
-                <i class="fa-solid fa-paper-plane text-teal-600"></i> Send a Job Offer
+                <i class="fa-solid fa-paper-plane text-teal-600"></i> Offer This Person a Job
             </h3>
-            <p class="text-xs text-slate-500">Your contact details stay private until the resume owner accepts your offer.</p>
+
             <form onsubmit="handleProposalSubmit(event)" class="space-y-3 mt-3">
-                <div><label class="block text-xs font-bold text-slate-700 mb-1">Your Name / Company *</label>
-                    <input type="text" id="applicant-name" required placeholder="Name or company" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></div>
-                <div><label class="block text-xs font-bold text-slate-700 mb-1">Your Username (optional)</label>
-                    <input type="text" id="applicant-username" placeholder="@yourname" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></div>
-                <div><label class="block text-xs font-bold text-slate-700 mb-1">Contact details *</label>
-                    <input type="text" id="applicant-contact" required placeholder="Email, phone, or professional handle" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></div>
-                <div><label class="block text-xs font-bold text-slate-700 mb-1">Offer message *</label>
-                    <textarea id="applicant-message" required rows="3" placeholder="Describe the opportunity and relevant details." class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800"></textarea></div>
-                <button type="submit" class="w-full py-2.5 text-white font-bold text-sm rounded-xl liquid-btn">Send Offer 📩</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: Match Celebration -->
-    <div id="match-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="glass-panel rounded-3xl p-6 w-full max-w-md text-center shadow-2xl relative space-y-4 border border-teal-200 animate-pop-in">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-400 to-emerald-500 border border-white flex items-center justify-center mx-auto text-white text-2xl shadow-lg coin-pop">
-                🎉
-            </div>
-            <h3 class="text-xl font-black text-slate-800">OFFER EXTENDED & ACCEPTED!</h3>
-            <p class="text-xs text-slate-600" id="match-modal-text">Candidate officially chosen!</p>
-            <div class="bg-teal-50/90 p-3 rounded-xl border border-teal-200 text-xs text-teal-800 font-mono font-bold" id="match-contact-info">
-                Contact: @handle
-            </div>
-            <button onclick="closeMatchModal()" class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-all shadow-md touch-bounce">
-                Great! 🚀
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL: Share Link -->
-    <div id="share-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="glass-panel rounded-3xl p-6 w-full max-w-md text-center shadow-2xl relative space-y-3 border border-white/90 animate-pop-in">
-            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 touch-bounce">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto text-xl shadow-md">
-                <i class="fa-solid fa-share-nodes"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800">Share Open Role</h3>
-            <p class="text-xs text-slate-500">Copy your role link to share with candidate prospects:</p>
-            <div class="flex gap-2">
-                <input type="text" id="share-link-input" readonly class="w-full glass-input rounded-xl px-3 py-2 text-xs text-slate-700 font-mono select-all">
-                <button onclick="copyShareInput()" class="px-4 py-2 bg-teal-600 text-white font-bold text-xs rounded-xl hover:bg-teal-700 shadow-md touch-bounce">Copy</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-16 sm:bottom-6 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-6 z-50 hidden glass-panel text-slate-800 border border-teal-200 px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 animate-slide-up">
-        <span id="toast-icon">🪙</span>
-        <span id="toast-message">Notification</span>
-    </div>
-
-    <!-- Firebase compat SDK: Firestore cloud storage + anonymous sign-in -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    <script>
-        // Firebase setup: replace these placeholder values with your Firebase web-app config.
-        // Find it in Firebase Console > Project settings > Your apps > SDK setup and configuration.
-        const firebaseConfig = {
-            apiKey: "AIzaSyDOhp-4aMTF1xCS3uUNtE9QXGjqi0NEy2k",
-            authDomain: "openrole-840ea.firebaseapp.com",
-            projectId: "openrole-840ea",
-            storageBucket: "openrole-840ea.firebasestorage.app",
-            messagingSenderId: "1009657342050",
-            appId: "1:1009657342050:web:68aef9a3a18294582a493b",
-            measurementId: "G-YHR4460P6V"
-        };
-
-        let cloudDb = null;
-        let cloudUser = null;
-        let cloudSyncReady = false;
-        let cloudUnsubscribe = null;
-        const firebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY" &&
-            firebaseConfig.projectId !== "YOUR_PROJECT_ID" && firebaseConfig.appId !== "YOUR_APP_ID";
-
-        // Production Ready State (Empty start)
-        let state = {
-            resumes: JSON.parse(localStorage.getItem('openrole_resumes')) || [],
-            currentResumeId: null,
-            targetApplyResumeId: null,
-            userVotes: JSON.parse(localStorage.getItem('openrole_voted_ids')) || [],
-            currentUserId: null
-        };
-
-        // Personal Aims Options
-        const defaultAims = [
-            "Full-Time Partner 💖", "Side-Project Co-Founder 🚀", "Gym & Tennis Buddy 🏋️", 
-            "Late-Night Gaming Co-Op 🎮", "Concert & Foodie Partner 🍜", "Coffee & Book Buddy ☕", 
-            "Hackathon Teammate 💻", "Travel Companion ✈️"
-        ];
-        let selectedAims = ["Full-Time Partner 💖"];
-
-        let selectedAvatar = null;
-        const avatarChoices = {
-            male: [
-                { id: "male-casual", label: "Casual", src: "https://randomuser.me/api/portraits/men/32.jpg" },
-                { id: "male-smart", label: "Smart", src: "https://randomuser.me/api/portraits/men/75.jpg" },
-                { id: "male-creative", label: "Creative", src: "https://randomuser.me/api/portraits/men/46.jpg" },
-                { id: "male-modern", label: "Modern", src: "https://randomuser.me/api/portraits/men/18.jpg" },
-                { id: "male-soft", label: "Soft & Polished", src: "https://randomuser.me/api/portraits/men/52.jpg" },
-                { id: "male-classic", label: "Classic", src: "https://randomuser.me/api/portraits/men/11.jpg" }
-            ],
-            female: [
-                { id: "female-classic", label: "Classic", src: "https://randomuser.me/api/portraits/women/44.jpg" },
-                { id: "female-geek", label: "Geek chic", src: "https://randomuser.me/api/portraits/women/68.jpg" },
-                { id: "female-elegant", label: "Elegant", src: "https://randomuser.me/api/portraits/women/21.jpg" },
-                { id: "female-modern", label: "Modern", src: "https://randomuser.me/api/portraits/women/54.jpg" },
-                { id: "female-soft", label: "Soft & Polished", src: "https://randomuser.me/api/portraits/women/32.jpg" },
-                { id: "female-creative", label: "Creative", src: "https://randomuser.me/api/portraits/women/65.jpg" }
-            ]
-        };
-
-        function renderAvatarChoices() {
-            const gender = document.getElementById('form-gender')?.value || '';
-            const picker = document.getElementById('avatar-picker');
-            if (!picker) return;
-            const choices = avatarChoices[gender] || [];
-            if (!choices.length) {
-                selectedAvatar = null;
-                picker.innerHTML = '<p class="col-span-3 text-center text-xs text-slate-400 py-3">Choose a group to see its six portraits.</p>';
-                return;
-            }
-            if (!choices.some(a => a.id === selectedAvatar)) selectedAvatar = null;
-            picker.innerHTML = choices.map(a => `
-                <button type="button" class="avatar-choice ${selectedAvatar === a.id ? 'selected' : ''}" onclick="selectAvatar('${a.id}')">
-                    <img src="${a.src}" alt="${a.label}" loading="lazy">
-                    <span>${a.label}</span>
-                    ${selectedAvatar === a.id ? '<span class="text-teal-700 mt-1">✓ Selected</span>' : ''}
-                </button>
-            `).join('');
-        }
-
-        function selectAvatar(avatarId) {
-            selectedAvatar = avatarId;
-            renderAvatarChoices();
-        }
-
-        function getAvatarForRole(role) {
-            const gender = role?.avatarGender;
-            const choice = (avatarChoices[gender] || []).find(a => a.id === role?.avatarId);
-            return choice || null;
-        }
-
-
-        function renderAimChips() {
-            const container = document.getElementById('aim-chips-container');
-            if (!container) return;
-
-            container.innerHTML = defaultAims.map(aim => {
-                const isSel = selectedAims.includes(aim);
-                return `
-                    <span onclick="toggleAimSelection('${aim.replace(/'/g, "\\'")}')" 
-                          class="chip-selectable border px-2.5 py-1 rounded-xl text-xs font-semibold shadow-2xs ${isSel ? 'selected' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-slate-50'}">
-                        ${aim} ${isSel ? '✓' : ''}
-                    </span>
-                `;
-            }).join('');
-        }
-
-        function toggleAimSelection(aim) {
-            if (selectedAims.includes(aim)) {
-                selectedAims = selectedAims.filter(a => a !== aim);
-            } else {
-                selectedAims.push(aim);
-            }
-            renderAimChips();
-        }
-
-        function addCustomAim() {
-            const input = document.getElementById('custom-aim-input');
-            const val = input.value.trim();
-            if (val && !defaultAims.includes(val)) {
-                defaultAims.push(val);
-                selectedAims.push(val);
-                input.value = '';
-                renderAimChips();
-            }
-        }
-
-        function persistLocalData() {
-            localStorage.setItem('openrole_resumes', JSON.stringify(state.resumes));
-            localStorage.setItem('openrole_voted_ids', JSON.stringify(state.userVotes));
-        }
-
-        // Local-first saves keep the app usable before/without Firebase.
-        // SECURITY: only the authenticated owner may write a role document to the cloud.
-        // Votes, views and pitches on somebody else's role remain local in this version;
-        // they must not overwrite that owner's document or bypass Firestore rules.
-        function saveData() {
-            persistLocalData();
-            if (!cloudSyncReady || !cloudDb || !cloudUser) return;
-
-            state.resumes.forEach(resume => {
-                const ownerUid = resume.ownerUid || (resume.isOwner ? cloudUser.uid : null);
-                if (!ownerUid || ownerUid !== cloudUser.uid) return;
-
-                const payload = { ...resume, ownerUid: cloudUser.uid };
-                delete payload.isOwner; // Derived locally from the authenticated UID.
-                cloudDb.collection('openrole_roles').doc(String(payload.id)).set(payload, { merge: true })
-                    .catch(error => console.error('OpenRole owner-only cloud save failed:', error));
-            });
-        }
-
-        function setupFirebaseSync() {
-            if (!firebaseConfigured || !window.firebase) {
-                console.info('OpenRole is in local-only mode. Add your Firebase config to enable cloud sharing.');
-                return;
-            }
-            try {
-                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-                cloudDb = firebase.firestore();
-                firebase.auth().signInAnonymously().then(credential => {
-                    cloudUser = credential.user;
-                    state.currentUserId = cloudUser.uid;
-                    cloudSyncReady = true;
-
-                    // Mark locally-created roles as belonging to this anonymous account.
-                    state.resumes.forEach(resume => {
-                        if (resume.isOwner && !resume.ownerUid) resume.ownerUid = cloudUser.uid;
-                    });
-                    cloudUnsubscribe = cloudDb.collection('openrole_roles').onSnapshot(snapshot => {
-                        const cloudRoles = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                        const cloudIds = new Set(cloudRoles.map(role => role.id));
-                        const localOnly = state.resumes.filter(role => !cloudIds.has(String(role.id)));
-                        state.resumes = [...cloudRoles, ...localOnly].map(role => ({
-                            ...role,
-                            isOwner: !!(role.ownerUid && role.ownerUid === cloudUser.uid)
-                        }));
-                        persistLocalData();
-                        const hashMatch = window.location.hash.match(/^#resume\/(.+)$/);
-                        if (hashMatch && !document.getElementById('view-resume').classList.contains('hidden')) {
-                            renderSingleResume(decodeURIComponent(hashMatch[1]));
-                        } else {
-                            renderLeaderboard();
-                            renderFeed();
-                        }
-                        // Upload only local roles that belong to this authenticated user.
-                        // Never upload a cached copy of another person's role.
-                        localOnly.forEach(role => {
-                            const ownerUid = role.ownerUid || (role.isOwner ? cloudUser.uid : null);
-                            if (!ownerUid || ownerUid !== cloudUser.uid) return;
-                            const payload = { ...role, ownerUid: cloudUser.uid };
-                            delete payload.isOwner;
-                            cloudDb.collection('openrole_roles').doc(String(payload.id)).set(payload, { merge: true })
-                                .catch(error => console.error('OpenRole owner-only initial sync failed:', error));
-                        });
-                    }, error => {
-                        console.error('OpenRole cloud listener failed:', error);
-                        showToast('Cloud sync unavailable — local mode is still active.');
-                    });
-                }).catch(error => {
-                    console.error('Firebase anonymous sign-in failed:', error);
-                    showToast('Cloud sign-in failed. Check Firebase setup.');
-                });
-            } catch (error) {
-                console.error('Firebase initialization failed:', error);
-                showToast('Firebase setup needs checking.');
-            }
-        }
-
-        async function loadRoleById(id) {
-            if (!cloudDb || !cloudSyncReady) return false;
-            try {
-                const doc = await cloudDb.collection('openrole_roles').doc(String(id)).get();
-                if (!doc.exists) return false;
-                const role = { ...doc.data(), id: doc.id };
-                role.isOwner = !!(role.ownerUid && role.ownerUid === state.currentUserId);
-                const index = state.resumes.findIndex(item => String(item.id) === String(id));
-                if (index >= 0) state.resumes[index] = role;
-                else state.resumes.unshift(role);
-                persistLocalData();
-                return true;
-            } catch (error) {
-                console.error('Could not load shared role:', error);
-                return false;
-            }
-        }
-
-        // Navigation Controller
-        function navigateTo(viewName, resumeId = null) {
-            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
-
-            const target = document.getElementById(`view-${viewName}`);
-            if (target) {
-                target.classList.remove('hidden');
-                target.classList.remove('animate-fade-in');
-                void target.offsetWidth; // Reflow trigger
-                target.classList.add('animate-fade-in');
-            }
-
-            // Bottom Nav Styling Update
-            const btnFeed = document.getElementById('nav-btn-feed');
-            const btnCreate = document.getElementById('nav-btn-create');
-
-            if (viewName === 'feed') {
-                btnFeed.className = "flex flex-col items-center gap-1 text-teal-700 font-bold text-xs touch-bounce";
-                btnCreate.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-teal-700 font-medium text-xs touch-bounce";
-                renderLeaderboard();
-                renderFeed();
-            } else if (viewName === 'create') {
-                btnCreate.className = "flex flex-col items-center gap-1 text-teal-700 font-bold text-xs touch-bounce";
-                btnFeed.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-teal-700 font-medium text-xs touch-bounce";
-                renderAimChips();
-            }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if (viewName === 'resume' && resumeId) {
-                state.currentResumeId = resumeId;
-                const existing = state.resumes.find(r => String(r.id) === String(resumeId));
-                if (existing) {
-                    incrementViews(resumeId);
-                    renderSingleResume(resumeId);
-                } else {
-                    document.getElementById('single-resume-card').innerHTML = '<div class="glass-panel p-6 rounded-2xl text-center text-sm text-slate-600">Loading shared role…</div>';
-                    loadRoleById(resumeId).then(found => {
-                        if (found) {
-                            incrementViews(resumeId);
-                            renderSingleResume(resumeId);
-                        } else {
-                            document.getElementById('single-resume-card').innerHTML = '<div class="glass-panel p-6 rounded-2xl text-center text-sm text-slate-600">This role could not be found. The owner may need to enable Firebase sharing or check the link.</div>';
-                        }
-                    });
-                }
-            }
-        }
-
-        function incrementViews(resumeId) {
-            const res = state.resumes.find(r => r.id === resumeId);
-            if (res) {
-                res.views = (res.views || 0) + 1;
-                saveData();
-            }
-        }
-
-        // Render Leaderboard
-        function renderLeaderboard() {
-            const leaderboardContainer = document.getElementById('leaderboard-container');
-            const sorted = [...state.resumes].sort((a, b) => b.votes - a.votes).slice(0, 3);
-
-            if (sorted.length === 0) {
-                leaderboardContainer.innerHTML = `
-                    <div class="col-span-full glass-card p-4 rounded-2xl text-center text-xs text-slate-500 border border-teal-100">
-                        No roles published yet! Post a vacancy to claim rank #1.
-                    </div>
-                `;
-                return;
-            }
-
-            const badges = [
-                { badge: '🥇 #1 Top Vibe', class: 'text-amber-800 bg-amber-50/90 border-amber-200' },
-                { badge: '🥈 #2 Runner-Up', class: 'text-slate-700 bg-slate-100/90 border-slate-200' },
-                { badge: '🥉 #3 Rising', class: 'text-teal-800 bg-teal-50/90 border-teal-200' }
-            ];
-
-            leaderboardContainer.innerHTML = sorted.map((res, index) => {
-                const badgeInfo = badges[index] || badges[2];
-                return `
-                    <div onclick="navigateTo('resume', '${res.id}')" class="glass-card p-3 rounded-2xl cursor-pointer hover:bg-white transition-all shadow-xs border border-teal-100/80">
-                        <div class="flex items-center justify-between mb-1 text-xs">
-                            <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full border ${badgeInfo.class}">
-                                ${badgeInfo.badge}
-                            </span>
-                            <span class="text-[11px] font-bold text-amber-600">
-                                🪙 ${res.votes} EXP
-                            </span>
-                        </div>
-                        <h4 class="font-extrabold text-xs text-slate-800 truncate">${res.name}</h4>
-                        <p class="text-[11px] text-teal-700 font-semibold truncate">${res.role}</p>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Render Feed
-        function renderFeed() {
-            const feedContainer = document.getElementById('feed-container');
-            const query = (document.getElementById('search-input')?.value || '').toLowerCase();
-
-            const filtered = state.resumes.filter(r => 
-                r.name.toLowerCase().includes(query) || 
-                r.role.toLowerCase().includes(query) ||
-                (r.aims && r.aims.some(a => a.toLowerCase().includes(query))) ||
-                r.skills.some(s => s.toLowerCase().includes(query))
-            );
-
-            if (filtered.length === 0) {
-                feedContainer.innerHTML = `
-                    <div class="glass-panel p-8 rounded-3xl text-center space-y-3">
-                        <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto text-xl font-bold shadow-xs">
-                            ✨
-                        </div>
-                        <h4 class="text-sm font-bold text-slate-800">No Open Roles Available</h4>
-                        <p class="text-xs text-slate-500 max-w-xs mx-auto">Be the first to publish a personal micro-resume role!</p>
-                        <button onclick="navigateTo('create')" class="px-4 py-2 text-xs font-bold text-white liquid-btn rounded-xl mt-1">
-                            Create First Role 🚀
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-
-            feedContainer.innerHTML = filtered.map(res => `
-                <div class="glass-card rounded-3xl p-4 space-y-3 border border-slate-200/90">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <span class="text-[10px] font-bold text-teal-800 bg-teal-50/90 border border-teal-200 px-2.5 py-0.5 rounded-lg inline-block mb-1 shadow-2xs">
-                                ${res.role}
-                            </span>
-                            <div class="flex items-center gap-3 mb-2">
-                                ${res.avatarUrl ? `<img src="${res.avatarUrl}" alt="" class="w-12 h-12 rounded-full object-cover object-top shrink-0" loading="lazy">` : ''}
-                                <div><h3 class="font-extrabold text-sm text-slate-800">${res.name}</h3>
-                                <p class="text-[10px] font-semibold text-slate-400">${res.avatarId ? (getAvatarForRole(res)?.label || '') : ''}</p></div>
-                            </div>
-                            <p class="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">${res.bio}</p>
-                        </div>
-                        <button onclick="handleVote('${res.id}', event)" class="flex flex-col items-center justify-center glass-pill px-2.5 py-1.5 rounded-xl shadow-2xs hover:bg-teal-100">
-                            <span class="text-sm">🪙</span>
-                            <span class="text-[10px] font-extrabold text-teal-800">${res.votes}</span>
-                        </button>
-                    </div>
-
-                    ${res.aims && res.aims.length > 0 ? `
-                        <div class="flex flex-wrap gap-1">
-                            ${res.aims.map(aim => `<span class="bg-teal-100/70 border border-teal-200 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-2xs">${aim}</span>`).join('')}
-                        </div>
-                    ` : ''}
-
-                    <div class="flex flex-wrap gap-1">
-                        ${res.skills.slice(0, 3).map(skill => `<span class="bg-white/90 border border-slate-200 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-md shadow-2xs">${skill}</span>`).join('')}
-                    </div>
-
-                    <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-3 text-slate-500 text-[11px]">
-                            <span class="flex items-center gap-1 font-medium"><i class="fa-regular fa-eye text-[10px]"></i> ${res.views || 0}</span>
-                            <span class="flex items-center gap-1 font-medium"><i class="fa-regular fa-paper-plane text-[10px]"></i> ${(res.applications || []).length}</span>
-                        </div>
-                        <button onclick="navigateTo('resume', '${res.id}')" class="text-teal-700 font-bold text-xs flex items-center gap-1 touch-bounce hover:text-teal-800">
-                            View Role <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                        </button>
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Employer Name *</label>
+                    <input type="text" id="employer-name" maxlength="80" required placeholder="Your full name or professional name" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
                 </div>
-            `).join('');
-        }
-
-        function filterResumes() {
-            renderFeed();
-        }
-
-        // Render Single Resume View
-        function renderSingleResume(id) {
-            const res = state.resumes.find(r => r.id === id);
-            if (!res) return navigateTo('feed');
-
-            const container = document.getElementById('single-resume-card');
-            const hasVoted = state.userVotes.includes(res.id);
-            const isOwner = !!res.isOwner;
-
-            container.innerHTML = `
-                <div class="bg-gradient-to-r from-teal-50/90 via-emerald-50/80 to-slate-50/90 p-5 border-b border-slate-200/80">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="glass-pill text-teal-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
-                            Position Open
-                        </span>
-                        <span class="text-[11px] font-semibold text-slate-500 bg-white/90 px-2.5 py-0.5 rounded-full border border-slate-200 flex items-center gap-1 shadow-2xs">
-                            👁️ ${res.views || 1} Views
-                        </span>
-                    </div>
-                    <div class="flex items-center gap-3 mt-2">
-                        ${res.avatarUrl ? `<img src="${res.avatarUrl}" alt="" class="w-16 h-16 rounded-full object-cover object-top shrink-0" loading="lazy">` : ''}
-                        <div><h2 class="text-xl font-extrabold text-slate-800">${res.name}</h2>
-                        <p class="text-[10px] font-semibold text-slate-400">${res.avatarId ? (getAvatarForRole(res)?.label || '') : ''}</p></div>
-                    </div>
-                    <p class="text-xs font-bold text-teal-700">${res.role}</p>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Username *</label>
+                    <input type="text" id="employer-username" maxlength="60" required placeholder="e.g. alex_sharma or @alexsharma" class="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-slate-800">
                 </div>
-
-                <div class="p-5 space-y-4 text-xs">
-                    ${res.aims && res.aims.length > 0 ? `
-                        <div>
-                            <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Primary Role Aims</h4>
-                            <div class="flex flex-wrap gap-1.5">
-                                ${res.aims.map(aim => `<span class="bg-teal-600 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-xs">${aim}</span>`).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <div>
-                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Vibe Bio</h4>
-                        <p class="text-slate-700 bg-white/90 p-3 rounded-xl border border-slate-200 leading-relaxed shadow-2xs">${res.bio}</p>
-                    </div>
-
-                    <div>
-                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Key Traits & Background</h4>
-                        <div class="bg-white/90 p-3 rounded-xl border border-slate-200 text-slate-700 font-medium shadow-2xs">
-                            ${res.experience}
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Skills Sought</h4>
-                        <div class="flex flex-wrap gap-1.5">
-                            ${res.skills.map(skill => `<span class="bg-white/90 border border-slate-200 text-slate-700 text-xs px-2.5 py-1 rounded-lg font-medium shadow-2xs">${skill}</span>`).join('')}
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Perks & Benefits 🎁</h4>
-                        <div class="bg-emerald-50/90 p-3 rounded-xl border border-emerald-200 text-emerald-800 font-medium shadow-2xs">
-                            ${res.greenFlags}
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Requirements & Green Flags 💼</h4>
-                        <div class="bg-teal-50/90 p-3 rounded-xl border border-teal-200 text-teal-800 font-medium shadow-2xs">
-                            ${res.package}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BOTTOM CONTROLS -->
-                <div class="bg-slate-50/90 border-t border-slate-200/80 p-4 space-y-4">
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="handleVote('${res.id}', event)" class="py-2.5 px-3 ${hasVoted ? 'bg-teal-100 text-teal-900 border-teal-300' : 'bg-white/90 text-slate-700 border border-slate-200 hover:bg-white'} rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs touch-bounce">
-                            <span class="${hasVoted ? 'coin-pop' : ''}">🪙</span>
-                            <span>${hasVoted ? 'Tipped' : 'Tip EXP'} (${res.votes})</span>
-                        </button>
-                        <button onclick="openApplyModal('${res.id}')" class="py-2.5 px-3 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 liquid-btn shadow-md">
-                            <i class="fa-solid fa-file-pen"></i>
-                            <span>Submit Pitch 📄</span>
-                        </button>
-                    </div>
-
-                    <!-- Owner-only offers are loaded from Firestore; private contact data is not embedded in the public resume. -->
-                    ${isOwner ? `
-                        <div class="pt-3 border-t border-slate-200/80 space-y-2">
-                            <span class="text-[10px] font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-user-gear text-teal-700"></i> Job Offers</span>
-                            <div id="owner-offers" class="space-y-2"><p class="text-slate-400 text-xs italic">Loading offers…</p></div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            if (isOwner) loadOwnerOffers(res.id);
-        }
-
-        // Action: Upvoting
-        function handleVote(resId, event) {
-            if (event) event.stopPropagation();
-
-            const res = state.resumes.find(r => r.id === resId);
-            if (!res) return;
-
-            const hasVoted = state.userVotes.includes(resId);
-            if (hasVoted) {
-                res.votes--;
-                state.userVotes = state.userVotes.filter(id => id !== resId);
-                showToast('EXP Coin removed');
-            } else {
-                res.votes++;
-                state.userVotes.push(resId);
-                showToast('+1 🪙 EXP Coin Tipped!');
-            }
-
-            saveData();
-
-            if (!document.getElementById('view-resume').classList.contains('hidden')) {
-                renderSingleResume(resId);
-            } else {
-                renderLeaderboard();
-                renderFeed();
-            }
-        }
-
-        // Action: Create Role Micro-Resume
-        function handleCreateResume(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('form-name').value.trim();
-            const role = document.getElementById('form-role').value.trim();
-            const handle = document.getElementById('form-handle').value.trim();
-            const bio = document.getElementById('form-bio').value.trim();
-            const experience = document.getElementById('form-experience').value.trim();
-            const skillsStr = document.getElementById('form-skills').value.trim();
-            const greenFlags = document.getElementById('form-greenflags').value.trim();
-            const packageStr = document.getElementById('form-package').value.trim();
-            const avatarGender = document.getElementById('form-gender').value;
-            if (!selectedAvatar || !(avatarChoices[avatarGender] || []).some(a => a.id === selectedAvatar)) {
-                showToast('Please choose one of the six portraits.');
-                return;
-            }
-            const chosenAvatar = (avatarChoices[avatarGender] || []).find(a => a.id === selectedAvatar);
-
-            const newResume = {
-                id: 'role_' + Date.now(),
-                isOwner: true,
-                ownerUid: state.currentUserId || null,
-                name,
-                role,
-                handle,
-                avatarGender,
-                avatarId: chosenAvatar.id,
-                avatarUrl: chosenAvatar.src,
-                aims: [...selectedAims],
-                bio,
-                experience,
-                skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean),
-                greenFlags,
-                package: packageStr,
-                votes: 1,
-                views: 1,
-                applications: []
-            };
-
-            state.resumes.unshift(newResume);
-            state.userVotes.push(newResume.id);
-            saveData();
-
-            document.getElementById('create-resume-form').reset();
-            selectedAvatar = null;
-            renderAvatarChoices();
-            selectedAims = ["Full-Time Partner 💖"];
-            showToast('OpenRole Published! 🚀');
-            navigateTo('resume', newResume.id);
-        }
-
-        // Modal Controls
-        function openApplyModal(resId) {
-            state.targetApplyResumeId = resId;
-            document.getElementById('apply-modal').classList.remove('hidden');
-        }
-
-        function closeApplyModal() {
-            document.getElementById('apply-modal').classList.add('hidden');
-        }
-
-        async async function handleProposalSubmit(e) {
-            e.preventDefault();
-            const name = document.getElementById('applicant-name').value.trim();
-            const username = document.getElementById('applicant-username').value.trim();
-            const contact = document.getElementById('applicant-contact').value.trim();
-            const message = document.getElementById('applicant-message').value.trim();
-            const res = state.resumes.find(r => String(r.id) === String(state.targetApplyResumeId));
-            if (!res) return;
-            if (!cloudSyncReady || !cloudDb || !cloudUser) { showToast('Offers require cloud sync. Reload and try again.'); return; }
-            if (!res.ownerUid || res.ownerUid === cloudUser.uid) { showToast('You cannot send an offer to your own resume.'); return; }
-            if (res.status === 'filled') { showToast('This role has already been filled.'); return; }
-            const offerId = 'offer_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-            const offerRef = cloudDb.collection('openrole_roles').doc(String(res.id)).collection('offers').doc(offerId);
-            try {
-                await offerRef.set({ roleOwnerUid: res.ownerUid, offererUid: cloudUser.uid, name, username, message, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-                await offerRef.collection('private').doc('contact').set({ offererUid: cloudUser.uid, name, username, contactHandle: contact, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-                closeApplyModal();
-                ['applicant-name','applicant-username','applicant-contact','applicant-message'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-                showToast('Job offer sent privately 📩');
-                renderSingleResume(res.id);
-            } catch (error) {
-                console.error('OpenRole offer submission failed:', error);
-                showToast('Could not send offer. Check Firestore rules.');
-            }
-        }
-
-        async function loadOwnerOffers(resId) {
-            const container = document.getElementById('owner-offers');
-            if (!container || !cloudDb || !cloudUser) return;
-            try {
-                const snap = await cloudDb.collection('openrole_roles').doc(String(resId)).collection('offers').orderBy('createdAt', 'desc').get();
-                if (!document.getElementById('owner-offers')) return;
-                if (snap.empty) { container.innerHTML = '<p class="text-slate-400 text-xs italic">No offers received yet.</p>'; return; }
-                container.innerHTML = '';
-                for (const doc of snap.docs) {
-                    const offer = doc.data();
-                    const card = document.createElement('div');
-                    card.className = 'bg-white/90 p-3 rounded-xl border border-slate-200 text-xs shadow-2xs space-y-2';
-                    const title = document.createElement('div'); title.className = 'font-bold text-slate-800'; title.textContent = offer.name || 'Employer'; card.appendChild(title);
-                    const msg = document.createElement('p'); msg.className = 'text-[11px] text-slate-600'; msg.textContent = offer.message || ''; card.appendChild(msg);
-                    if (offer.username) { const u = document.createElement('p'); u.className = 'text-[11px] text-slate-500'; u.textContent = offer.username; card.appendChild(u); }
-                    const status = document.createElement('p'); status.className = 'text-[10px] font-bold uppercase'; status.textContent = offer.status === 'accepted' ? 'Accepted' : offer.status === 'pending' ? 'Pending' : 'Closed'; card.appendChild(status);
-                    if (offer.status === 'pending') {
-                        const button = document.createElement('button'); button.className = 'px-3 py-1 bg-teal-600 text-white font-bold text-[11px] rounded-lg shadow-xs'; button.textContent = 'TAKE JOB'; button.onclick = () => acceptProposal(resId, doc.id); card.appendChild(button);
-                    }
-                    if (offer.status === 'accepted') {
-                        try {
-                            const contactSnap = await doc.ref.collection('private').doc('contact').get();
-                            if (contactSnap.exists) { const contact = contactSnap.data(); const details = document.createElement('p'); details.className = 'text-[11px] text-emerald-800 font-semibold break-words'; details.textContent = 'Employer contact: ' + (contact.contactHandle || 'Not provided'); card.appendChild(details); }
-                        } catch (error) { console.error('Could not load accepted offer contact:', error); }
-                    }
-                    container.appendChild(card);
-                }
-            } catch (error) {
-                console.error('Could not load offers:', error);
-                container.innerHTML = '<p class="text-rose-600 text-xs">Offers could not be loaded. Check Firestore rules.</p>';
-            }
-        }
-
-        async function acceptProposal(resId, offerId) {
-            const res = state.resumes.find(r => String(r.id) === String(resId));
-            if (!res || !cloudDb || !cloudUser || !res.ownerUid || res.ownerUid !== cloudUser.uid) { showToast('Only the resume creator can accept offers.'); return; }
-            const roleRef = cloudDb.collection('openrole_roles').doc(String(resId));
-            const offerRef = roleRef.collection('offers').doc(String(offerId));
-            try {
-                await cloudDb.runTransaction(async transaction => {
-                    const roleSnap = await transaction.get(roleRef);
-                    const offerSnap = await transaction.get(offerRef);
-                    if (!roleSnap.exists || !offerSnap.exists) throw new Error('Role or offer not found.');
-                    if (roleSnap.data().ownerUid !== cloudUser.uid) throw new Error('Only the resume owner can accept.');
-                    if (roleSnap.data().status === 'filled') throw new Error('This role is already filled.');
-                    if (offerSnap.data().status !== 'pending' || offerSnap.data().roleOwnerUid !== cloudUser.uid) throw new Error('Offer is no longer pending.');
-                    transaction.update(offerRef, { status: 'accepted', acceptedAt: firebase.firestore.FieldValue.serverTimestamp() });
-                    transaction.update(roleRef, { status: 'filled', selectedOfferId: String(offerId) });
-                });
-                document.getElementById('match-modal-text').textContent = 'You accepted the job offer. Employer contact is now visible only to you.';
-                document.getElementById('match-contact-info').textContent = 'Contact details are available in the Job Offers section.';
-                document.getElementById('match-modal').classList.remove('hidden');
-                renderSingleResume(resId);
-            } catch (error) { console.error('Could not accept offer:', error); showToast(error.message || 'Could not accept offer. Check Firestore rules.'); }
-        }
-
-        function closeMatchModal() {
-            document.getElementById('match-modal').classList.add('hidden');
-        }
-
-        // Functional Sharing Handler
-        function shareRoleLink() {
-            const hash = state.currentResumeId ? `#resume/${encodeURIComponent(state.currentResumeId)}` : '';
-            const shareableURL = `${window.location.origin}${window.location.pathname}${hash}`;
-
-            if (navigator.share) {
-                navigator.share({
-                    title: 'OpenRole - Personal Vacancy',
-                    text: 'Check out this Open Role personal vacancy!',
-                    url: shareableURL
-                }).catch(() => {
-                    openShareModalWithURL(shareableURL);
-                });
-            } else {
-                openShareModalWithURL(shareableURL);
-            }
-        }
-
-        function openShareModalWithURL(shareableURL) {
-            document.getElementById('share-link-input').value = shareableURL;
-            document.getElementById('share-modal').classList.remove('hidden');
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(shareableURL).catch(() => {});
-            }
-        }
-
-        function closeShareModal() {
-            document.getElementById('share-modal').classList.add('hidden');
-        }
-
-        function copyShareInput() {
-            const input = document.getElementById('share-link-input');
-            input.select();
-            input.setSelectionRange(0, 99999);
-            try {
-                document.execCommand('copy');
-                showToast('Link copied to clipboard! 📋');
-                closeShareModal();
-            } catch (err) {
-                showToast('Please copy the link manually.');
-            }
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const messageEl = document.getElementById('toast-message');
-
-            messageEl.textContent = message;
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        // Hash Routing Listener for Deep Links
-        window.addEventListener('hashchange', function() {
-            const hash = window.location.hash;
-            if (hash && hash.includes('#resume/')) {
-                const targetId = hash.split('#resume/')[1];
-                navigateTo('resume', targetId);
-            } else if (!hash || hash === '#feed') {
-                navigateTo('feed');
-            }
-        });
-
-        // Initial Load
-        window.onload = function() {
-            persistLocalData();
-            setupFirebaseSync();
-            const hash = window.location.hash;
-            if (hash && hash.includes('#resume/')) {
-                const targetId = hash.split('#resume/')[1];
-                navigateTo('resume', targetId);
-            } else {
-                navigateTo('feed');
-            }
-        };
-    </script>
-</body>
-</html>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Contac
