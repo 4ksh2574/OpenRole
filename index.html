@@ -1078,7 +1078,7 @@
                     if (offer.username) { const u = document.createElement('p'); u.className = 'text-[11px] text-slate-500'; u.textContent = offer.username; card.appendChild(u); }
                     const status = document.createElement('p'); status.className = 'text-[10px] font-bold uppercase'; status.textContent = offer.status === 'accepted' ? 'Accepted' : offer.status === 'pending' ? 'Pending' : 'Closed'; card.appendChild(status);
                     if (offer.status === 'pending') {
-                        const button = document.createElement('button'); button.className = 'px-3 py-1 bg-teal-600 text-white font-bold text-[11px] rounded-lg shadow-xs'; button.textContent = 'ACCEPT OFFER'; button.onclick = () => acceptProposal(resId, doc.id); card.appendChild(button);
+                        const button = document.createElement('button'); button.className = 'px-3 py-1 bg-teal-600 text-white font-bold text-[11px] rounded-lg shadow-xs'; button.textContent = 'TAKE JOB'; button.onclick = () => acceptProposal(resId, doc.id); card.appendChild(button);
                     }
                     if (offer.status === 'accepted') {
                         try {
