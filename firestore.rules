@@ -18,19 +18,20 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
       allow update: if signedIn() && (
         resource.data.ownerUid == request.auth.uid
+          && request.resource.data.ownerUid == resource.data.ownerUid
         || (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
-          && request.resource.data.views == resource.data.views + 1
+          && request.resource.data.views == ((resource.data.views is int) ? resource.data.views : 0) + 1
         )
         || (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
-          && (request.resource.data.votes == resource.data.votes + 1
-            || request.resource.data.votes == resource.data.votes - 1)
+          && (request.resource.data.votes == ((resource.data.votes is int) ? resource.data.votes : 0) + 1
+            || request.resource.data.votes == ((resource.data.votes is int) ? resource.data.votes : 0) - 1)
           && request.resource.data.votes >= 0
         )
         || (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applicationCount'])
-          && request.resource.data.applicationCount == resource.data.applicationCount + 1
+          && request.resource.data.applicationCount == ((resource.data.applicationCount is int) ? resource.data.applicationCount : 0) + 1
         )
       );
 
