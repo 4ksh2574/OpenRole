@@ -1,54 +1,133 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() {
       return request.auth != null;
     }
+
+    function rolePath(roleId) {
+      return /databases/$(database)/documents/openrole_roles/$(roleId);
+    }
+
+    function offerPath(roleId, offerId) {
+      return /databases/$(database)/documents/openrole_roles/$(roleId)/offers/$(offerId);
+    }
+
     function isRoleOwner(roleId) {
       return signedIn()
-        && exists(/databases/$(database)/documents/openrole_roles/$(roleId))
-        && get(/databases/$(database)/documents/openrole_roles/$(roleId)).data.ownerUid == request.auth.uid;
+        && exists(rolePath(roleId))
+        && get(rolePath(roleId)).data.ownerUid == request.auth.uid;
     }
 
     match /openrole_roles/{roleId} {
+      // All authenticated visitors can view the public vacancy feed.
       allow read: if signedIn();
+
+      // A new role must belong to the user who creates it.
       allow create: if signedIn()
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.keys().hasAll(['ownerUid', 'name', 'role']);
-      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      allow delete: if isRoleOwner(roleId);
+
       allow update: if signedIn() && (
-        resource.data.ownerUid == request.auth.uid
+        // Owners may edit their role, but cannot transfer ownership.
+        (
+          resource.data.ownerUid == request.auth.uid
           && request.resource.data.ownerUid == resource.data.ownerUid
+          && (
+            !request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['status', 'hiredApplicationId'])
+            || (
+              request.resource.data.status == 'filled'
+              && request.resource.data.hiredApplicationId is string
+              && resource.data.status != 'filled'
+              && get(offerPath(roleId, request.resource.data.hiredApplicationId)).data.status == 'pending'
+              && get(offerPath(roleId, request.resource.data.hiredApplicationId)).data.senderUid
+                != request.auth.uid
+              && getAfter(offerPath(roleId, request.resource.data.hiredApplicationId)).data.status == 'hired'
+              && getAfter(offerPath(roleId, request.resource.data.hiredApplicationId)).data.accepted == true
+            )
+          )
+        )
+        // Viewing a role may increment views by exactly one.
         || (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
-          && request.resource.data.views == ((resource.data.views is int) ? resource.data.views : 0) + 1
+          && request.resource.data.views == ((resource.data.views is int || resource.data.views is float) ? resource.data.views : 0) + 1
         )
+        // Tipping or removing a tip changes votes by one and cannot go below zero.
         || (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
-          && (request.resource.data.votes == ((resource.data.votes is int) ? resource.data.votes : 0) + 1
-            || request.resource.data.votes == ((resource.data.votes is int) ? resource.data.votes : 0) - 1)
+          && (
+            request.resource.data.votes == ((resource.data.votes is int || resource.data.votes is float) ? resource.data.votes : 0) + 1
+            || request.resource.data.votes == ((resource.data.votes is number) ? resource.data.votes : 0) - 1
+          )
           && request.resource.data.votes >= 0
         )
+        // Sending an offer increments the application count by exactly one.
         || (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applicationCount'])
-          && request.resource.data.applicationCount == ((resource.data.applicationCount is int) ? resource.data.applicationCount : 0) + 1
+          && resource.data.status != 'filled'
+          && request.resource.data.applicationCount == ((resource.data.applicationCount is int || resource.data.applicationCount is float) ? resource.data.applicationCount : 0) + 1
         )
       );
 
       match /offers/{offerId} {
-        allow read: if isRoleOwner(roleId);
+        // Only the role owner and the offer's sender may read an offer.
+        allow read: if signedIn()
+          && (
+            isRoleOwner(roleId)
+            || resource.data.senderUid == request.auth.uid
+          );
+
+        // Offer documents use the exact fields written by the current app.
         allow create: if signedIn()
-          && exists(/databases/$(database)/documents/openrole_roles/$(roleId))
+          && exists(rolePath(roleId))
+          && get(rolePath(roleId)).data.ownerUid != request.auth.uid
+          && get(rolePath(roleId)).data.status != 'filled'
           && request.resource.data.roleId == roleId
           && request.resource.data.senderUid == request.auth.uid
           && request.resource.data.status == 'pending'
-          && !('accepted' in request.resource.data && request.resource.data.accepted == true);
+          && request.resource.data.accepted == false
+          && request.resource.data.keys().hasOnly([
+            'roleId',
+            'senderUid',
+            'name',
+            'employerName',
+            'employerUsername',
+            'employerHandle',
+            'message',
+            'accepted',
+            'status',
+            'createdAt'
+          ]);
+
+        // The owner may hire one pending offer, atomically with filling the role,
+        // or decline another pending offer after the role has been filled.
         allow update: if isRoleOwner(roleId)
-          && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'accepted', 'acceptedAt'])
-          && request.resource.data.status in ['hired', 'declined']
-          && (request.resource.data.status != 'hired' || request.resource.data.accepted == true);
-        allow delete: if isRoleOwner(roleId);
+          && resource.data.status == 'pending'
+          && request.resource.data.senderUid == resource.data.senderUid
+          && request.resource.data.roleId == resource.data.roleId
+          && (
+            (
+              request.resource.data.status == 'hired'
+              && request.resource.data.accepted == true
+              && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status', 'accepted', 'acceptedAt'])
+              && getAfter(rolePath(roleId)).data.status == 'filled'
+              && getAfter(rolePath(roleId)).data.hiredApplicationId == offerId
+            )
+            || (
+              request.resource.data.status == 'declined'
+              && request.resource.data.accepted == false
+              && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status'])
+            )
+          );
+
+        // The app has no offer-deletion feature.
+        allow delete: if false;
       }
     }
   }
