@@ -597,13 +597,15 @@
                 await new Promise(resolve => {
                     let first = true;
                     roleSnapshotUnsubscribe = firestoreSdk.onSnapshot(rolesRef, snapshot => {
+                        const previousRoles = new Map(state.resumes.map(role => [role.id, role]));
                         state.resumes = snapshot.docs.map(item => {
                             const data = item.data();
+                            const previous = previousRoles.get(item.id);
                             return {
                                 ...data,
                                 id: item.id,
                                 isOwner: !!firestoreAuth.currentUser && data.ownerUid === firestoreAuth.currentUser.uid,
-                                applications: []
+                                applications: previous?.applications || []
                             };
                         });
                         syncOfferListeners(state.resumes);
