@@ -469,13 +469,19 @@
     </div>
 
     <script>
-        // Production Ready State (Empty start)
+        // Firestore is the shared source of truth. Legacy local resume data is left untouched.
         let state = {
-            resumes: JSON.parse(localStorage.getItem('openrole_resumes')) || [],
+            resumes: [],
             currentResumeId: null,
             targetApplyResumeId: null,
             userVotes: JSON.parse(localStorage.getItem('openrole_voted_ids')) || []
         };
+        let firestoreDb = null;
+        let firestoreAuth = null;
+        let roleSnapshotUnsubscribe = null;
+        const offerSnapshotUnsubscribes = new Map();
+        let cloudReady = false;
+        let initialSnapshotReceived = false;
 
         // Personal Aims Options
         const defaultAims = [
@@ -521,8 +527,117 @@
         }
 
         function saveData() {
-            localStorage.setItem('openrole_resumes', JSON.stringify(state.resumes));
+            // Keep per-device vote preferences, but never overwrite legacy resume data.
             localStorage.setItem('openrole_voted_ids', JSON.stringify(state.userVotes));
+        }
+
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyDOhp-4aMTF1xCS3uUNtE9QXGjqi0NEy2k",
+            authDomain: "openrole-840ea.firebaseapp.com",
+            projectId: "openrole-840ea",
+            storageBucket: "openrole-840ea.firebasestorage.app",
+            messagingSenderId: "1009657342050",
+            appId: "1:1009657342050:web:68aef9a3a18294582a493b",
+            measurementId: "G-YHR4460P6V"
+        };
+
+        let firebaseApi = null;
+        function showSyncError(message) {
+            console.error('[OpenRole data sync]', message);
+            showToast(message || 'Data sync failed. Please try again.');
+        }
+
+        function refreshCurrentView() {
+            if (!cloudReady) return;
+            const resumeView = document.getElementById('view-resume');
+            if (resumeView && !resumeView.classList.contains('hidden') && state.currentResumeId) {
+                renderSingleResume(state.currentResumeId);
+            } else {
+                renderLeaderboard();
+                renderFeed();
+            }
+        }
+
+        function syncOfferListeners(roles) {
+            const ownerRoleIds = new Set(roles.filter(role => role.isOwner).map(role => role.id));
+            for (const [roleId, unsubscribe] of offerSnapshotUnsubscribes.entries()) {
+                if (!ownerRoleIds.has(roleId)) {
+                    unsubscribe();
+                    offerSnapshotUnsubscribes.delete(roleId);
+                }
+            }
+            for (const roleId of ownerRoleIds) {
+                if (offerSnapshotUnsubscribes.has(roleId)) continue;
+                const offersRef = firebaseApi.collection(firestoreDb, 'openrole_roles', roleId, 'offers');
+                const unsubscribe = firebaseApi.onSnapshot(offersRef, snapshot => {
+                    const role = state.resumes.find(item => item.id === roleId);
+                    if (!role) return;
+                    role.applications = snapshot.docs.map(item => ({ ...item.data(), id: item.id }));
+                    refreshCurrentView();
+                }, error => showSyncError('Could not load job offers. Check Firestore rules.'));
+                offerSnapshotUnsubscribes.set(roleId, unsubscribe);
+            }
+        }
+
+        async function initializeCloudData() {
+            try {
+                const appSdk = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');
+                const authSdk = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');
+                const firestoreSdk = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+                firebaseApi = { ...firestoreSdk };
+                const app = appSdk.initializeApp(FIREBASE_CONFIG);
+                firestoreAuth = authSdk.getAuth(app);
+                firestoreApiSignIn = authSdk.signInAnonymously;
+                await authSdk.setPersistence(firestoreAuth, authSdk.browserLocalPersistence);
+                if (!firestoreAuth.currentUser) await authSdk.signInAnonymously(firestoreAuth);
+                else await authSdk.getIdToken(firestoreAuth.currentUser);
+
+                firestoreDb = firestoreSdk.getFirestore(app);
+                cloudReady = true;
+                const rolesRef = firestoreSdk.collection(firestoreDb, 'openrole_roles');
+                await new Promise(resolve => {
+                    let first = true;
+                    roleSnapshotUnsubscribe = firestoreSdk.onSnapshot(rolesRef, snapshot => {
+                        state.resumes = snapshot.docs.map(item => {
+                            const data = item.data();
+                            return {
+                                ...data,
+                                id: item.id,
+                                isOwner: !!firestoreAuth.currentUser && data.ownerUid === firestoreAuth.currentUser.uid,
+                                applications: []
+                            };
+                        });
+                        syncOfferListeners(state.resumes);
+                        if (state.currentResumeId && !state.resumes.some(role => role.id === state.currentResumeId)) {
+                            state.currentResumeId = null;
+                        }
+                        refreshCurrentView();
+                        if (first) {
+                            first = false;
+                            initialSnapshotReceived = true;
+                            resolve();
+                        }
+                    }, error => {
+                        showSyncError('Could not load shared resumes. Check Firestore rules and connection.');
+                        if (first) {
+                            first = false;
+                            resolve();
+                        }
+                    });
+                });
+            } catch (error) {
+                cloudReady = false;
+                showSyncError('Could not connect to OpenRole data. Existing local data was preserved.');
+                console.error(error);
+            }
+        }
+
+        function requireCloud() {
+            if (!cloudReady || !firestoreDb || !firestoreAuth || !firestoreAuth.currentUser) {
+                showSyncError('OpenRole is not connected to the database yet. Please reload and try again.');
+                return false;
+            }
+            return true;
         }
 
         // Navigation Controller
@@ -561,11 +676,17 @@
             }
         }
 
-        function incrementViews(resumeId) {
-            const res = state.resumes.find(r => r.id === resumeId);
-            if (res) {
-                res.views = (res.views || 0) + 1;
-                saveData();
+        async function incrementViews(resumeId) {
+            if (!requireCloud()) return;
+            try {
+                const ref = firebaseApi.doc(firestoreDb, 'openrole_roles', resumeId);
+                await firebaseApi.runTransaction(firestoreDb, async transaction => {
+                    const snap = await transaction.get(ref);
+                    if (!snap.exists()) return;
+                    transaction.update(ref, { views: (Number(snap.data().views) || 0) + 1 });
+                });
+            } catch (error) {
+                console.error('[OpenRole views]', error);
             }
         }
 
@@ -739,7 +860,7 @@
                     <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs">
                         <div class="flex items-center gap-3 text-slate-500 text-[11px]">
                             <span class="flex items-center gap-1 font-medium"><i class="fa-regular fa-eye text-[10px]"></i> ${res.views || 0}</span>
-                            <span class="flex items-center gap-1 font-medium"><i class="fa-regular fa-paper-plane text-[10px]"></i> ${(res.applications || []).length}</span>
+                            <span class="flex items-center gap-1 font-medium"><i class="fa-regular fa-paper-plane text-[10px]"></i> ${Number(res.applicationCount) || (res.applications || []).length}</span>
                         </div>
                         <button onclick="navigateTo('resume', '${res.id}')" class="text-teal-700 font-bold text-xs flex items-center gap-1 touch-bounce hover:text-teal-800">
                             View Resume <i class="fa-solid fa-chevron-right text-[10px]"></i>
@@ -873,36 +994,34 @@
         });
 
         // Action: Upvoting
-        function handleVote(resId, event) {
+        async function handleVote(resId, event) {
             if (event) event.stopPropagation();
-
-            const res = state.resumes.find(r => r.id === resId);
-            if (!res) return;
-
+            if (!requireCloud()) return;
             const hasVoted = state.userVotes.includes(resId);
-            if (hasVoted) {
-                res.votes--;
-                state.userVotes = state.userVotes.filter(id => id !== resId);
-                showToast('EXP Coin removed');
-            } else {
-                res.votes++;
-                state.userVotes.push(resId);
-                showToast('+1 🪙 EXP Coin Tipped!');
-            }
-
-            saveData();
-
-            if (!document.getElementById('view-resume').classList.contains('hidden')) {
-                renderSingleResume(resId);
-            } else {
-                renderLeaderboard();
-                renderFeed();
+            const delta = hasVoted ? -1 : 1;
+            try {
+                const ref = firebaseApi.doc(firestoreDb, 'openrole_roles', resId);
+                await firebaseApi.runTransaction(firestoreDb, async transaction => {
+                    const snap = await transaction.get(ref);
+                    if (!snap.exists()) throw new Error('Resume no longer exists.');
+                    const votes = Math.max(0, Number(snap.data().votes) || 0);
+                    transaction.update(ref, { votes: Math.max(0, votes + delta) });
+                });
+                state.userVotes = hasVoted
+                    ? state.userVotes.filter(id => id !== resId)
+                    : [...state.userVotes, resId];
+                saveData();
+                showToast(hasVoted ? 'EXP Coin removed' : '+1 🪙 EXP Coin Tipped!');
+            } catch (error) {
+                showSyncError('Could not save your vote. Please try again.');
+                return;
             }
         }
 
         // Action: Create Role Micro-Resume
-        function handleCreateResume(e) {
+        async function handleCreateResume(e) {
             e.preventDefault();
+            if (!requireCloud()) return;
 
             const name = document.getElementById('form-name').value.trim();
             const gender = document.getElementById('form-gender').value;
@@ -917,32 +1036,35 @@
             const packageStr = document.getElementById('form-package').value.trim();
 
             const newResume = {
-                id: 'role_' + Date.now(),
-                isOwner: true,
-                name,
-                gender,
-                avatar,
-                role,
-                handle,
-                aims: [...selectedAims],
-                bio,
-                experience,
+                name, gender, avatar, role, handle,
+                aims: [...selectedAims], bio, experience,
                 skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean),
-                greenFlags,
-                package: packageStr,
-                votes: 1,
-                views: 1,
-                applications: []
+                greenFlags, package: packageStr,
+                votes: 1, views: 1, applicationCount: 0,
+                status: 'open', hiredApplicationId: null,
+                ownerUid: firestoreAuth.currentUser.uid,
+                createdAt: Date.now()
             };
 
-            state.resumes.unshift(newResume);
-            state.userVotes.push(newResume.id);
-            saveData();
+            try {
+                const created = await firebaseApi.addDoc(
+                    firebaseApi.collection(firestoreDb, 'openrole_roles'),
+                    newResume
+                );
+                newResume.id = created.id;
+                newResume.isOwner = true;
+                newResume.applications = [];
+                state.resumes.unshift(newResume);
+                state.userVotes.push(created.id);
+                saveData();
 
-            document.getElementById('create-resume-form').reset();
-            selectedAims = ["Full-Time Partner 💖"];
-            showToast('Resume Published! 🚀');
-            navigateTo('resume', newResume.id);
+                document.getElementById('create-resume-form').reset();
+                selectedAims = ["Full-Time Partner 💖"];
+                showToast('Resume Published! 🚀');
+                navigateTo('resume', created.id);
+            } catch (error) {
+                showSyncError('Resume was not published. Please check the database connection and try again.');
+            }
         }
 
         // Modal Controls
@@ -960,38 +1082,48 @@
             document.getElementById('apply-modal').classList.add('hidden');
         }
 
-        function handleProposalSubmit(e) {
+        async function handleProposalSubmit(e) {
             e.preventDefault();
+            if (!requireCloud()) return;
 
             const employerName = document.getElementById('employer-name').value.trim();
             const employerUsername = document.getElementById('employer-username').value.trim();
             const employerHandle = document.getElementById('employer-handle').value.trim();
             const message = document.getElementById('applicant-message').value.trim();
-
             const res = state.resumes.find(r => r.id === state.targetApplyResumeId);
-            if (res) {
-                if (!res.applications) res.applications = [];
-                res.applications.push({
-                    id: 'pitch_' + Date.now(),
-                    name: employerName,
-                    employerName,
-                    employerUsername,
-                    employerHandle,
-                    message,
-                    accepted: false,
-                    status: 'pending',
-                    createdAt: Date.now()
-                });
-                saveData();
+            if (!res || res.hiredApplicationId) {
+                showToast('This resume has already accepted a job offer.');
+                return;
+            }
+
+            const roleRef = firebaseApi.doc(firestoreDb, 'openrole_roles', res.id);
+            const batch = firebaseApi.writeBatch(firestoreDb);
+            const offerRef = firebaseApi.doc(firebaseApi.collection(firestoreDb, 'openrole_roles', res.id, 'offers'));
+            batch.set(offerRef, {
+                roleId: res.id,
+                senderUid: firestoreAuth.currentUser.uid,
+                name: employerName,
+                employerName,
+                employerUsername,
+                employerHandle,
+                message,
+                accepted: false,
+                status: 'pending',
+                createdAt: Date.now()
+            });
+            batch.update(roleRef, { applicationCount: (Number(res.applicationCount) || (res.applications || []).length) + 1 });
+
+            try {
+                await batch.commit();
                 showToast('Job offer sent! 📄');
                 closeApplyModal();
-
                 document.getElementById('employer-name').value = '';
                 document.getElementById('employer-username').value = '';
                 document.getElementById('employer-handle').value = '';
                 document.getElementById('applicant-message').value = '';
-
-                renderSingleResume(res.id);
+                refreshCurrentView();
+            } catch (error) {
+                showSyncError('Job offer was not sent. Please check the database rules and try again.');
             }
         }
 
@@ -1017,7 +1149,8 @@
             pendingReviewOffer = null;
         }
 
-        function acceptProposal(resId, appId) {
+        async function acceptProposal(resId, appId) {
+            if (!requireCloud()) return;
             const res = state.resumes.find(r => r.id === resId);
             if (!res || !res.isOwner) {
                 showToast('Only the resume owner can accept a job offer.');
@@ -1027,25 +1160,51 @@
                 showToast('This resume has already accepted a job offer.');
                 return;
             }
-            const app = (res.applications || []).find(a => a.id === appId);
-            if (!app || app.status === 'declined' || app.status === 'hired') return;
 
-            app.status = 'hired';
-            app.accepted = true; // compatibility with older saved records
-            res.hiredApplicationId = app.id;
-            res.status = 'filled';
-            (res.applications || []).forEach(other => {
-                if (other.id !== app.id && other.status !== 'hired') {
-                    other.status = 'declined';
-                }
-            });
-            saveData();
+            const roleRef = firebaseApi.doc(firestoreDb, 'openrole_roles', resId);
+            const offerRef = firebaseApi.doc(firestoreDb, 'openrole_roles', resId, 'offers', appId);
+            let acceptedOffer = null;
+            try {
+                await firebaseApi.runTransaction(firestoreDb, async transaction => {
+                    const [roleSnap, offerSnap] = await Promise.all([
+                        transaction.get(roleRef), transaction.get(offerRef)
+                    ]);
+                    if (!roleSnap.exists() || roleSnap.data().ownerUid !== firestoreAuth.currentUser.uid) {
+                        throw new Error('Only the resume owner can accept an offer.');
+                    }
+                    if (!offerSnap.exists() || roleSnap.data().hiredApplicationId) {
+                        throw new Error('This role is already filled or the offer no longer exists.');
+                    }
+                    acceptedOffer = { ...offerSnap.data(), id: offerSnap.id };
+                    transaction.update(roleRef, {
+                        hiredApplicationId: offerSnap.id,
+                        status: 'filled'
+                    });
+                    transaction.update(offerRef, {
+                        status: 'hired',
+                        accepted: true,
+                        acceptedAt: Date.now()
+                    });
+                });
 
-            document.getElementById('match-modal-text').textContent = `You accepted the job offer from ${app.employerName || app.name || 'the employer'}. Here are the employer’s contact details:`;
-            document.getElementById('match-contact-info').textContent = `Employer: ${app.employerName || app.name || 'Not provided'} | Username: ${app.employerUsername || 'Not provided'} | Contact Handle: ${app.employerHandle || 'Not provided'}`;
-            document.querySelector('#match-modal h3').textContent = 'JOB OFFER ACCEPTED!';
-            document.getElementById('match-modal').classList.remove('hidden');
-            renderSingleResume(res.id);
+                const offersRef = firebaseApi.collection(firestoreDb, 'openrole_roles', resId, 'offers');
+                const offersSnapshot = await firebaseApi.getDocs(offersRef);
+                const batch = firebaseApi.writeBatch(firestoreDb);
+                offersSnapshot.docs.forEach(offerDoc => {
+                    if (offerDoc.id !== appId && offerDoc.data().status === 'pending') {
+                        batch.update(offerDoc.ref, { status: 'declined' });
+                    }
+                });
+                await batch.commit();
+
+                document.getElementById('match-modal-text').textContent = `You accepted the job offer from ${acceptedOffer.employerName || acceptedOffer.name || 'the employer'}. Here are the employer’s contact details:`;
+                document.getElementById('match-contact-info').textContent = `Employer: ${acceptedOffer.employerName || acceptedOffer.name || 'Not provided'} | Username: ${acceptedOffer.employerUsername || 'Not provided'} | Contact Handle: ${acceptedOffer.employerHandle || 'Not provided'}`;
+                document.querySelector('#match-modal h3').textContent = 'JOB OFFER ACCEPTED!';
+                document.getElementById('match-modal').classList.remove('hidden');
+                refreshCurrentView();
+            } catch (error) {
+                showSyncError('Could not accept the offer. It may already be filled, or Firestore rules need updating.');
+            }
         }
 
         function closeMatchModal() {
@@ -1119,9 +1278,9 @@
         });
 
         // Initial Load
-        window.onload = function() {
+        window.onload = async function() {
             renderAvatarChoices();
-            saveData();
+            await initializeCloudData();
             const hash = window.location.hash;
             if (hash && hash.includes('#resume/')) {
                 const targetId = hash.split('#resume/')[1];
