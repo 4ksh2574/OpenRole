@@ -588,6 +588,8 @@
                 const app = appSdk.initializeApp(FIREBASE_CONFIG);
                 firestoreAuth = authSdk.getAuth(app);
                 await authSdk.setPersistence(firestoreAuth, authSdk.browserLocalPersistence);
+                // Wait until Firebase restores any saved anonymous session before creating a new one.
+                await firestoreAuth.authStateReady();
                 if (!firestoreAuth.currentUser) await authSdk.signInAnonymously(firestoreAuth);
                 else await firestoreAuth.currentUser.getIdToken();
 
@@ -619,6 +621,7 @@
                             resolve();
                         }
                     }, error => {
+                        cloudReady = false;
                         showSyncError('Could not load shared resumes. Check Firestore rules and connection.');
                         if (first) {
                             first = false;
