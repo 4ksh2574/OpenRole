@@ -1133,7 +1133,9 @@
                 document.getElementById('applicant-message').value = '';
                 refreshCurrentView();
             } catch (error) {
-                showSyncError('Job offer was not sent. Please check the database rules and try again.');
+                console.error('[OpenRole offer submission]', error);
+                const code = error && error.code ? String(error.code) : 'unknown';
+                showSyncError('Job offer failed (' + code + '). Please report this code.');
             }
         }
 
