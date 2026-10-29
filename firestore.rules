@@ -61,7 +61,7 @@ service cloud.firestore {
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
           && (
             request.resource.data.votes == ((resource.data.votes is int || resource.data.votes is float) ? resource.data.votes : 0) + 1
-            || request.resource.data.votes == ((resource.data.votes is number) ? resource.data.votes : 0) - 1
+            || request.resource.data.votes == ((resource.data.votes is int || resource.data.votes is float) ? resource.data.votes : 0) - 1
           )
           && request.resource.data.votes >= 0
         )
