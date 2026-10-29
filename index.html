@@ -587,10 +587,9 @@
                 firebaseApi = { ...firestoreSdk };
                 const app = appSdk.initializeApp(FIREBASE_CONFIG);
                 firestoreAuth = authSdk.getAuth(app);
-                firestoreApiSignIn = authSdk.signInAnonymously;
                 await authSdk.setPersistence(firestoreAuth, authSdk.browserLocalPersistence);
                 if (!firestoreAuth.currentUser) await authSdk.signInAnonymously(firestoreAuth);
-                else await authSdk.getIdToken(firestoreAuth.currentUser);
+                else await firestoreAuth.currentUser.getIdToken();
 
                 firestoreDb = firestoreSdk.getFirestore(app);
                 cloudReady = true;
@@ -1097,9 +1096,8 @@
             }
 
             const roleRef = firebaseApi.doc(firestoreDb, 'openrole_roles', res.id);
-            const batch = firebaseApi.writeBatch(firestoreDb);
             const offerRef = firebaseApi.doc(firebaseApi.collection(firestoreDb, 'openrole_roles', res.id, 'offers'));
-            batch.set(offerRef, {
+            const offerData = {
                 roleId: res.id,
                 senderUid: firestoreAuth.currentUser.uid,
                 name: employerName,
@@ -1110,11 +1108,18 @@
                 accepted: false,
                 status: 'pending',
                 createdAt: Date.now()
-            });
-            batch.update(roleRef, { applicationCount: (Number(res.applicationCount) || (res.applications || []).length) + 1 });
+            };
 
             try {
-                await batch.commit();
+                await firebaseApi.runTransaction(firestoreDb, async transaction => {
+                    const roleSnapshot = await transaction.get(roleRef);
+                    if (!roleSnapshot.exists() || roleSnapshot.data().hiredApplicationId) {
+                        throw new Error('This role is already filled or no longer exists.');
+                    }
+                    const currentCount = Number(roleSnapshot.data().applicationCount) || 0;
+                    transaction.set(offerRef, offerData);
+                    transaction.update(roleRef, { applicationCount: currentCount + 1 });
+                });
                 showToast('Job offer sent! 📄');
                 closeApplyModal();
                 document.getElementById('employer-name').value = '';
