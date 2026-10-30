@@ -218,17 +218,68 @@
             visibility: hidden;
             pointer-events: none;
         }
-        .data-loading-spinner {
-            width: 38px;
-            height: 38px;
-            border: 3px solid rgba(13, 148, 136, .18);
-            border-top-color: #0d9488;
-            border-radius: 50%;
-            animation: dataLoadingSpin .8s linear infinite;
+        /* OpenRole's custom role-card loading animation */
+        .openrole-loader-stage {
+            position: relative;
+            width: 112px;
+            height: 82px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        @keyframes dataLoadingSpin { to { transform: rotate(360deg); } }
+        .openrole-loader-card {
+            position: absolute;
+            width: 66px;
+            height: 48px;
+            border: 1px solid rgba(255,255,255,.95);
+            border-radius: 13px;
+            background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(204,251,241,.94));
+            box-shadow: 0 8px 20px rgba(13,148,136,.13), inset 0 1px 0 white;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px;
+            animation: openRoleCardPulse 1.65s ease-in-out infinite;
+        }
+        .openrole-loader-card::before {
+            content: '';
+            width: 17px;
+            height: 17px;
+            flex: 0 0 17px;
+            border-radius: 6px;
+            background: linear-gradient(135deg,#2dd4bf,#0f766e);
+            box-shadow: 0 2px 6px rgba(13,148,136,.2);
+        }
+        .openrole-loader-card::after {
+            content: '';
+            display: block;
+            width: 25px;
+            height: 4px;
+            border-radius: 9px;
+            background: rgba(15,118,110,.25);
+            box-shadow: 0 8px 0 rgba(15,118,110,.12);
+        }
+        .openrole-loader-card:nth-child(1) { transform: translate(-19px, 9px) rotate(-12deg); animation-delay: 0s; }
+        .openrole-loader-card:nth-child(2) { transform: translate(19px, 9px) rotate(12deg); animation-delay: .2s; }
+        .openrole-loader-card:nth-child(3) { transform: translate(0,-9px); animation-delay: .4s; }
+        .openrole-loader-spark {
+            position: absolute;
+            color: #0d9488;
+            font-size: 16px;
+            animation: openRoleSparkle 1.3s ease-in-out infinite;
+        }
+        .openrole-loader-spark.one { top: 1px; right: 7px; }
+        .openrole-loader-spark.two { bottom: 3px; left: 5px; animation-delay: .55s; font-size: 12px; }
+        @keyframes openRoleCardPulse {
+            0%, 100% { filter: saturate(.85); }
+            50% { filter: saturate(1.25); }
+        }
+        @keyframes openRoleSparkle {
+            0%,100% { opacity: .3; transform: scale(.7) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(25deg); }
+        }
         @media (prefers-reduced-motion: reduce) {
-            .data-loading-spinner { animation-duration: 1.8s; }
+            .openrole-loader-card, .openrole-loader-spark { animation: none; }
             #data-loading-screen { transition: none; }
         }
     </style>
@@ -237,9 +288,15 @@
 
     <div id="data-loading-screen" role="status" aria-live="polite" aria-label="Loading OpenRole data">
         <div class="flex flex-col items-center gap-3 text-center px-6">
-            <div class="data-loading-spinner" aria-hidden="true"></div>
-            <p class="text-sm font-semibold text-teal-800">Loading shared roles…</p>
-            <p class="text-xs text-slate-500">Getting the latest from OpenRole</p>
+            <div class="openrole-loader-stage" aria-hidden="true">
+                <div class="openrole-loader-card"></div>
+                <div class="openrole-loader-card"></div>
+                <div class="openrole-loader-card"></div>
+                <span class="openrole-loader-spark one">✦</span>
+                <span class="openrole-loader-spark two">✧</span>
+            </div>
+            <p class="text-sm font-extrabold tracking-tight text-teal-800">OpenRole</p>
+            <p class="text-xs text-slate-500">Finding your people and open roles…</p>
         </div>
     </div>
 
