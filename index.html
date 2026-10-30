@@ -283,6 +283,72 @@
             .openrole-loader-card, .openrole-loader-spark { animation: none; }
             #data-loading-screen { transition: none; }
         }
+
+        /* Subtle OpenRole motion layer */
+        body {
+            background-size: 180% 180%;
+            animation: openRoleAmbient 22s ease-in-out infinite alternate;
+        }
+        @keyframes openRoleAmbient {
+            0% { background-position: 0% 20%; }
+            50% { background-position: 70% 55%; }
+            100% { background-position: 100% 85%; }
+        }
+
+        .glass-card {
+            transform: translateZ(0);
+            will-change: transform;
+        }
+        .glass-card:hover {
+            transform: translateY(-4px) scale(1.008);
+            box-shadow: 0 20px 46px -10px rgba(20,184,166,.28),
+                        inset 0 2px 0 rgba(255,255,255,1);
+        }
+
+        .liquid-btn {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        .liquid-btn::after {
+            content: "";
+            position: absolute;
+            inset: -45% auto -45% -65%;
+            width: 42%;
+            transform: rotate(22deg);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent);
+            pointer-events: none;
+            transition: left .65s cubic-bezier(.2,.7,.2,1);
+            z-index: -1;
+        }
+        .liquid-btn:hover::after,
+        .liquid-btn:focus-visible::after {
+            left: 130%;
+        }
+
+        .glass-pill:hover,
+        .chip-selectable:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.035);
+        }
+        .share-humour-card:hover {
+            transform: rotate(0deg) translateY(-2px);
+            box-shadow: 0 14px 28px rgba(13,148,136,.18),
+                        inset 0 1px 0 rgba(255,255,255,.98);
+        }
+        button:focus-visible,
+        [role="button"]:focus-visible {
+            outline: 3px solid rgba(13,148,136,.45);
+            outline-offset: 3px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body { animation: none; }
+            .glass-card, .liquid-btn, .glass-pill, .chip-selectable,
+            .share-humour-card { transition: none !important; }
+            .liquid-btn::after { display: none; }
+        }
+
     </style>
 </head>
 <body class="flex flex-col pb-24">
